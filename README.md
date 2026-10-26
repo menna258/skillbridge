@@ -2,6 +2,8 @@
 
 SkillBridge helps university students discover their strengths, get a personalised learning roadmap, take curated courses and find internships and entry-level jobs. The whole site works in **English and Arabic** (with a right-to-left layout for Arabic).
 
+**Live site:** https://skillbridge-ar7.pages.dev (deployed on Cloudflare Pages from the `main` branch)
+
 > **Demo project.** Courses, jobs, companies and student stories are realistic sample data. Accounts and progress are stored only in your browser (localStorage). The Contact form can save messages to Supabase.
 
 ## Run it locally
