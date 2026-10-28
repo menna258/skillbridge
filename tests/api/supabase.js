@@ -74,9 +74,33 @@ export async function signedIn({ email, password }) {
   return c
 }
 
+// Lesson Content for one lesson of a Course.
+export async function addLessonContent(courseId, lessonIndex = 0) {
+  const row = { course_id: courseId, lesson_index: lessonIndex, body_en: 'Secret lesson text', body_ar: 'نص درس سري', video_url: 'https://example.com/video' }
+  const { error } = await server().from('skillbridge_lesson_content').insert(row)
+  if (error) throw error
+  return row
+}
+
+// An Order as the payment webhook would leave it.
+export async function createOrder(student, courseId, status = 'paid') {
+  const { error } = await server().from('skillbridge_orders').insert({
+    student_id: student.id,
+    course_id: courseId,
+    status,
+    amount_piasters: 5000,
+    student_name: student.name,
+    student_email: student.email,
+    paid_at: status === 'pending' ? null : new Date().toISOString(),
+  })
+  if (error) throw error
+}
+
 export async function cleanup() {
   const s = server()
   await s.from('skillbridge_contact_messages').delete().like('email', `${PREFIX}%`)
+  // Orders hold on to their Course and Student, so they go first.
+  if (courseIds.length) await s.from('skillbridge_orders').delete().in('course_id', courseIds)
   if (courseIds.length) await s.from('skillbridge_courses').delete().in('id', courseIds.splice(0))
   for (const id of created.splice(0)) await s.auth.admin.deleteUser(id)
 }
