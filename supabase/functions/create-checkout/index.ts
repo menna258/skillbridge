@@ -3,12 +3,7 @@
 // The price always comes from the database, never from the browser.
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4'
 import { corsHeaders, json } from '../_shared/cors.ts'
-
-const env = (k: string) => {
-  const v = Deno.env.get(k)
-  if (!v) throw new Error(`Missing secret ${k}`)
-  return v
-}
+import { env } from '../_shared/env.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })

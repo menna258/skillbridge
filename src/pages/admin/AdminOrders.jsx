@@ -19,7 +19,7 @@ export default function AdminOrders() {
   const { t, L, fmtPrice, fmtDate } = useLang()
   const toast = useToast()
   const [orders, setOrders] = useState(null)
-  const [filter, setFilter] = useState('paid')
+  const [filter, setFilter] = useState('all')
 
   const load = () =>
     supabase

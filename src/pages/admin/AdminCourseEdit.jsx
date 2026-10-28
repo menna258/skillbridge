@@ -26,7 +26,7 @@ const blank = () => ({
   rating: 0,
   learners: 0,
   priceEgp: '0',
-  hidden: true,
+  hidden: false,
   lessons: [emptyLesson()],
 })
 
@@ -119,15 +119,22 @@ export default function AdminCourseEdit() {
       ? await supabase.from(COURSES_TABLE).insert(row)
       : await supabase.from(COURSES_TABLE).update(row).eq('id', course.id)
 
-    // Lesson Content is keyed by lesson position, so rewrite it as a whole.
+    // Lesson Content is keyed by lesson position: write every lesson first, then
+    // drop rows past the last lesson, so a failed save never loses content.
     let contentError = null
     if (!error) {
-      const del = await supabase.from(LESSON_CONTENT_TABLE).delete().eq('course_id', course.id)
-      const rows = form.lessons
-        .map((l, i) => ({ course_id: course.id, lesson_index: i, body_en: l.body_en.trim(), body_ar: l.body_ar.trim(), video_url: l.video_url.trim() || null }))
-        .filter((r) => r.body_en || r.body_ar || r.video_url)
-      const ins = rows.length ? await supabase.from(LESSON_CONTENT_TABLE).insert(rows) : {}
-      contentError = del.error || ins.error
+      const rows = form.lessons.map((l, i) => ({
+        course_id: course.id,
+        lesson_index: i,
+        body_en: l.body_en.trim(),
+        body_ar: l.body_ar.trim(),
+        video_url: l.video_url.trim() || null,
+      }))
+      const up = await supabase.from(LESSON_CONTENT_TABLE).upsert(rows)
+      const del = up.error
+        ? {}
+        : await supabase.from(LESSON_CONTENT_TABLE).delete().eq('course_id', course.id).gte('lesson_index', rows.length)
+      contentError = up.error || del.error
     }
     setSaving(false)
     if (error || contentError) return toast(t('admin.saveError'), 'error')

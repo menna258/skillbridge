@@ -2,12 +2,7 @@
 // place an Order becomes Paid (or Failed), and only after the HMAC signature
 // checks out. Every newly Paid Order is emailed to the Admin Inbox.
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4'
-
-const env = (k: string) => {
-  const v = Deno.env.get(k)
-  if (!v) throw new Error(`Missing secret ${k}`)
-  return v
-}
+import { env } from '../_shared/env.ts'
 
 // Field order is fixed by Paymob's HMAC spec for the transaction callback.
 const HMAC_FIELDS = [
@@ -104,7 +99,15 @@ Deno.serve(async (req) => {
       const title = course?.title_en || order.course_id
       if (error?.code === '23505') {
         // The Student already owns this Course: the money was taken twice.
-        await emailAdmin({ ...order, paid_at: new Date().toISOString(), paymob_transaction_id: tx.id }, title, true)
+        // Record the transaction once, so Paymob's retries don't email again.
+        const { data: first } = await admin
+          .from('skillbridge_orders')
+          .update({ paymob_transaction_id: String(tx.id) })
+          .eq('id', order.id)
+          .is('paymob_transaction_id', null)
+          .select('id')
+          .maybeSingle()
+        if (first) await emailAdmin({ ...order, paid_at: new Date().toISOString(), paymob_transaction_id: tx.id }, title, true)
         return new Response('ok')
       }
       if (error) throw error

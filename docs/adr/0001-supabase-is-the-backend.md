@@ -11,4 +11,4 @@ Buying Courses needs real accounts, a database the Admin can edit and a server t
 
 - Courses move from `src/data/courses.js` into the database, so the Admin can edit them. The file stays only as the seed for the first import. Jobs, careers, questions and skills stay in `src/data`.
 - Browser-only accounts and the "demo student" go away. Learning progress (lessons ticked, roadmap, saved jobs) stays in the browser, keyed by the Supabase user id; what a Student Owns always comes from the database.
-- The Admin is a normal Supabase Auth user whose `app_metadata.role` is `admin`. Only the database owner can set that, so nobody can make themselves Admin from the site.
+- The Admin is a normal Supabase Auth user whose `app_metadata.skillbridge_admin` is `true`. Only the database owner can set that, so nobody can make themselves Admin from the site.

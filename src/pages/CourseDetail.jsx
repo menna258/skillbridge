@@ -200,7 +200,7 @@ export default function CourseDetail() {
                 ) : (
                   <>
                     <Button className="w-full" size="lg" onClick={onBuy} loading={buying}>
-                      {buying ? t('course.buying') : t('course.buy')}
+                      {buying ? t('course.buying') : t('course.buy', { price: fmtPrice(course.price) })}
                     </Button>
                     <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-navy-500"><ShieldCheck className="h-4 w-4 text-teal-600" /> {t('course.securePayment')}</p>
                   </>
