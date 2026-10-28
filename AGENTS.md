@@ -1,0 +1,5 @@
+- SkillBridge: منصة تطوير مهني لطلبة الجامعة، بالعربي والإنجليزي. الوظايف وباقي الداتا في src/data، والكورسات في جدول skillbridge_courses على Supabase (src/data/courses.js بقى أول استيراد بس). ما تخترعش داتا غير كده.
+- المصطلحات في GLOSSARY.md، والقرارات الكبيرة في docs/adr.
+- كل push على main بيتنشر على Cloudflare Pages لوحده (skillbridge-ar7.pages.dev).
+- فورم Contact بيحفظ في جدول skillbridge_contact_messages على Supabase.
+- بعد أي تعديل: ابعت رسالة من الفورم على لينك pages.dev، واتأكد إنها وصلت الجدول.

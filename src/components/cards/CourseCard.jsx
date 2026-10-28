@@ -3,14 +3,15 @@ import { CheckCircle2, Clock, PlayCircle, Star, Users } from 'lucide-react'
 import { useLang } from '../../i18n/LanguageContext'
 import { useApp } from '../../context/AppContext'
 import { courseProgress } from '../../lib/progress'
+import { isFree } from '../../lib/catalog'
 import SmartImage from '../ui/SmartImage'
 import { ProgressBar } from '../ui/Progress'
 import CareerIcon from '../ui/CareerIcon'
 
 export default function CourseCard({ course }) {
-  const { t, L, fmtNum, fmtPct } = useLang()
-  const { data } = useApp()
-  const progress = courseProgress(data, course.id)
+  const { t, L, fmtNum, fmtPct, fmtPrice } = useLang()
+  const { data, owns } = useApp()
+  const progress = owns(course.id) ? courseProgress(data, course.id) : null
 
   return (
     <Link
@@ -53,7 +54,10 @@ export default function CourseCard({ course }) {
               <ProgressBar value={progress.pct} label={L(course.title)} />
             </div>
           ) : (
-            <span className="text-sm font-semibold text-teal-600 group-hover:underline">{t('courses.view')}</span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-bold text-navy-900">{isFree(course) ? t('courses.free') : fmtPrice(course.price)}</span>
+              <span className="text-sm font-semibold text-teal-600 group-hover:underline">{t('courses.view')}</span>
+            </div>
           )}
         </div>
       </div>

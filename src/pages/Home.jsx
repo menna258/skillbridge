@@ -3,7 +3,7 @@ import { ArrowRight, BookOpen, Briefcase, Compass, Map, Sparkles, TrendingUp, Us
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
 import { careers, careerById } from '../data/careers'
-import { courses } from '../data/courses'
+import { listedCourses } from '../lib/catalog'
 import { jobs } from '../data/jobs'
 import { questions } from '../data/questions'
 import { studentStories } from '../data/students'
@@ -29,7 +29,7 @@ export default function Home() {
 
   const stats = [
     [careers.length, 'home.statCareers'],
-    [courses.length, 'home.statCourses'],
+    [listedCourses().length, 'home.statCourses'],
     [jobs.length, 'home.statJobs'],
     [questions.length, 'home.statQuestions'],
   ]

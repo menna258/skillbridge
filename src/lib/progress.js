@@ -1,5 +1,5 @@
 import { careerById } from '../data/careers'
-import { courses, courseById } from '../data/courses'
+import { courses, courseById } from './catalog'
 import { todayKey } from './storage'
 
 // The career whose roadmap the student is following.
@@ -35,7 +35,7 @@ export function courseProgress(data, courseId) {
 export function userSkills(data) {
   const set = new Set(data.profile.skills)
   Object.keys(data.enrollments).forEach((id) => {
-    if (courseProgress(data, id)?.complete) courseById[id].skills.forEach((s) => set.add(s))
+    if (courseProgress(data, id)?.complete) courseById[id]?.skills.forEach((s) => set.add(s))
   })
   return set
 }
