@@ -4,7 +4,7 @@ import { ArrowRight, BookOpen, Bookmark, Briefcase, CheckCircle2, Compass, ListC
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
 import { careerById } from '../data/careers'
-import { courseById } from '../data/courses'
+import { courseById } from '../lib/catalog'
 import { jobById, jobs } from '../data/jobs'
 import { skills as skillNames } from '../data/skills'
 import {
@@ -51,14 +51,15 @@ function Empty({ text, to, label }) {
 
 export default function Dashboard() {
   const { t, L, fmtNum, fmtPct, fmtDate } = useLang()
-  const { user, data } = useApp()
+  const { user, data, owns } = useApp()
   const [modalJob, setModalJob] = useState(null)
 
   const careerId = activeCareerId(data)
   const career = careerById[careerId]
   const roadmap = roadmapProgress(data, careerId)
   const next = nextRoadmapStep(data, careerId)
-  const enrolledIds = Object.keys(data.enrollments)
+  // Only courses the student still owns (a refund or removal takes them away).
+  const enrolledIds = Object.keys(data.enrollments).filter(owns)
   const week = weeklyActivity(data)
   const weekTotal = week.reduce((s, d) => s + d.minutes, 0)
   const appliedIds = new Set(data.applications.map((a) => a.jobId))

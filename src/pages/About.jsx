@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ChevronDown, Eye, Globe2, Hammer, LineChart, Target, Focus } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
-import { useToast } from '../context/ToastContext'
 import { img } from '../lib/images'
 import PageHeader from '../components/ui/PageHeader'
 import SmartImage from '../components/ui/SmartImage'
@@ -13,11 +11,8 @@ import Button from '../components/ui/Button'
 
 export default function About() {
   const { t } = useLang()
-  const { user, loginDemo } = useApp()
-  const toast = useToast()
-  const navigate = useNavigate()
+  const { user } = useApp()
   const [openFaq, setOpenFaq] = useState(0)
-  const [loading, setLoading] = useState(false)
 
   const values = [
     [Focus, 'about.v1', 'about.v1Text'],
@@ -26,15 +21,6 @@ export default function About() {
     [Globe2, 'about.v4', 'about.v4Text'],
   ]
   const faqs = [1, 2, 3, 4, 5]
-
-  const tryDemo = async () => {
-    if (user) return navigate('/dashboard')
-    setLoading(true)
-    const res = await loginDemo()
-    setLoading(false)
-    toast(t('auth.welcome', { name: res.user.name }))
-    navigate('/dashboard')
-  }
 
   return (
     <>
@@ -115,8 +101,8 @@ export default function About() {
             <h2 className="text-2xl font-extrabold">{t('about.ctaTitle')}</h2>
             <p className="mt-2 text-teal-50">{t('about.ctaText')}</p>
           </div>
-          <Button variant="navy" size="lg" onClick={tryDemo} loading={loading} className="shrink-0">
-            {user ? t('nav.dashboard') : t('auth.demoButton')}
+          <Button variant="navy" size="lg" to={user ? '/dashboard' : '/signup'} className="shrink-0">
+            {user ? t('nav.dashboard') : t('nav.signup')}
           </Button>
         </div>
       </section>

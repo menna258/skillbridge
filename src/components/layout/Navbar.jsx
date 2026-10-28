@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDown, Languages, LayoutDashboard, LogOut, Menu, User, X } from 'lucide-react'
+import { ChevronDown, Languages, LayoutDashboard, LogOut, Menu, ShieldCheck, User, X } from 'lucide-react'
 import { useLang } from '../../i18n/LanguageContext'
 import { useApp } from '../../context/AppContext'
 import { useToast } from '../../context/ToastContext'
@@ -111,6 +111,11 @@ export default function Navbar() {
                   <Link to="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-navy-700 hover:bg-navy-50">
                     <User className="h-4 w-4" /> {t('nav.profile')}
                   </Link>
+                  {user.isAdmin && (
+                    <Link to="/admin" className="flex items-center gap-2 px-4 py-2.5 text-sm text-navy-700 hover:bg-navy-50">
+                      <ShieldCheck className="h-4 w-4" /> {t('nav.admin')}
+                    </Link>
+                  )}
                   <button onClick={handleLogout} className="flex w-full items-center gap-2 border-t border-navy-50 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
                     <LogOut className="h-4 w-4" /> {t('nav.logout')}
                   </button>
@@ -152,6 +157,7 @@ export default function Navbar() {
               <>
                 <NavLink to="/dashboard" className={linkCls}>{t('nav.dashboard')}</NavLink>
                 <NavLink to="/profile" className={linkCls}>{t('nav.profile')}</NavLink>
+                {user.isAdmin && <NavLink to="/admin" className={linkCls}>{t('nav.admin')}</NavLink>}
                 <button onClick={handleLogout} className="rounded-lg px-3 py-2 text-start text-sm font-medium text-red-600 hover:bg-red-50">
                   {t('nav.logout')}
                 </button>

@@ -4,7 +4,7 @@ import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { careers, careerById } from '../data/careers'
-import { courseById } from '../data/courses'
+import { courseById } from '../lib/catalog'
 import { skills as skillNames } from '../data/skills'
 import { activeCareerId, roadmapProgress } from '../lib/progress'
 import PageHeader from '../components/ui/PageHeader'
@@ -163,7 +163,7 @@ export default function Roadmap() {
                             <div className="flex-1">
                               <p className={`font-medium ${done ? 'text-navy-500 line-through decoration-teal-400' : 'text-navy-900'}`}>{L(step.title)}</p>
                               <div className="mt-2.5 flex flex-wrap gap-2">
-                                {step.courses.map((cid) => (
+                                {step.courses.filter((cid) => courseById[cid] && !courseById[cid].hidden).map((cid) => (
                                   <Link
                                     key={cid}
                                     to={`/courses/${cid}`}

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { SearchX } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
-import { courses, courseCategories, courseLevels } from '../data/courses'
+import { courses, courseCategories, courseLevels } from '../lib/catalog'
 import { skills as skillNames } from '../data/skills'
 import useFilteredLoading from '../lib/useFilteredLoading'
 import PageHeader from '../components/ui/PageHeader'
@@ -18,7 +18,7 @@ const selectCls =
 
 export default function Courses() {
   const { t } = useLang()
-  const { user, data } = useApp()
+  const { user, data, catalogVersion } = useApp()
   const [params, setParams] = useSearchParams()
   const q = params.get('q') || ''
   const cat = params.get('cat') || 'all'
@@ -36,6 +36,7 @@ export default function Courses() {
   const results = useMemo(() => {
     const term = q.trim().toLowerCase()
     const list = courses.filter((c) => {
+      if (c.hidden && !data.enrollments[c.id]) return false
       if (cat !== 'all' && c.category !== cat) return false
       if (level !== 'all' && c.level !== level) return false
       if (mine && !data.enrollments[c.id]) return false
@@ -51,7 +52,7 @@ export default function Courses() {
       short: (a, b) => a.hours - b.hours,
     }
     return list.sort(sorters[sort] || sorters.popular)
-  }, [q, cat, level, sort, mine, data.enrollments])
+  }, [q, cat, level, sort, mine, data.enrollments, catalogVersion])
 
   const loading = useFilteredLoading(`${q}|${cat}|${level}|${sort}|${mine}`)
   const filtered = q || cat !== 'all' || level !== 'all' || mine

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Award, BarChart2, CheckCircle2, Circle, Clock, PlayCircle, SearchX, Star, Users, UserRound } from 'lucide-react'
+import { ArrowLeft, Award, BarChart2, CheckCircle2, ChevronDown, Circle, Clock, Lock, PlayCircle, SearchX, ShieldCheck, Star, Users, UserRound, Video } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
-import { courseById, courses, lessonMinutes } from '../data/courses'
+import { courseById, courses, isFree, lessonMinutes } from '../lib/catalog'
+import { supabase, LESSON_CONTENT_TABLE } from '../lib/supabase'
 import { skills as skillNames } from '../data/skills'
 import { courseProgress } from '../lib/progress'
 import { delay } from '../lib/storage'
@@ -17,11 +18,26 @@ import { EmptyState } from '../components/ui/Feedback'
 
 export default function CourseDetail() {
   const { id } = useParams()
-  const { t, L, fmtNum, fmtPct } = useLang()
-  const { user, data, enroll, completeLesson } = useApp()
+  const { t, L, fmtNum, fmtPct, fmtPrice } = useLang()
+  const { user, data, enroll, completeLesson, owns } = useApp()
   const toast = useToast()
   const [enrolling, setEnrolling] = useState(false)
+  const [buying, setBuying] = useState(false)
+  const [content, setContent] = useState({})
+  const [openLesson, setOpenLesson] = useState(null)
   const course = courseById[id]
+  const owned = owns(id)
+
+  // Lesson Content is only readable by Students who own the Course (RLS).
+  useEffect(() => {
+    setContent({})
+    if (!owned || !supabase) return
+    supabase
+      .from(LESSON_CONTENT_TABLE)
+      .select('lesson_index, body_en, body_ar, video_url')
+      .eq('course_id', id)
+      .then(({ data: rows }) => setContent(Object.fromEntries((rows || []).map((r) => [r.lesson_index, r]))))
+  }, [id, owned])
 
   if (!course) {
     return (
@@ -36,11 +52,11 @@ export default function CourseDetail() {
     )
   }
 
-  const progress = courseProgress(data, course.id)
+  const progress = owned ? courseProgress(data, course.id) : null
   const enrolled = !!progress
   const done = data.enrollments[course.id]?.done || []
   const minutes = lessonMinutes(course)
-  const related = courses.filter((c) => c.category === course.category && c.id !== course.id).slice(0, 3)
+  const related = courses.filter((c) => c.category === course.category && c.id !== course.id && !c.hidden).slice(0, 3)
 
   const onEnroll = async () => {
     setEnrolling(true)
@@ -48,6 +64,19 @@ export default function CourseDetail() {
     enroll(course.id)
     setEnrolling(false)
     toast(t('toast.enrolled', { title: L(course.title) }))
+  }
+
+  // Paid Courses go through Paymob's hosted checkout; the Order only becomes
+  // Paid when Paymob's signed callback reaches our server.
+  const onBuy = async () => {
+    setBuying(true)
+    const { data: res, error } = await supabase.functions.invoke('create-checkout', { body: { courseId: course.id } })
+    if (error || !res?.url) {
+      setBuying(false)
+      toast(t('course.paymentError'), 'error')
+      return
+    }
+    window.location.assign(res.url)
   }
 
   const onComplete = (i) => {
@@ -86,17 +115,30 @@ export default function CourseDetail() {
       <section className="container-page grid gap-8 py-10 lg:grid-cols-[1.4fr_1fr]">
         <div>
           <h2 className="mb-4 text-xl font-bold text-navy-900">{t('course.syllabus')}</h2>
-          {!enrolled && <p className="mb-4 rounded-xl bg-navy-50 px-4 py-3 text-sm text-navy-600">{t('course.enrollPrompt')}</p>}
+          {!enrolled && <p className="mb-4 rounded-xl bg-navy-50 px-4 py-3 text-sm text-navy-600">{t(owned || isFree(course) ? 'course.enrollPrompt' : 'course.buyPrompt')}</p>}
           <ol className="card divide-y divide-navy-50">
             {course.lessons.map((lesson, i) => {
               const isDone = done.includes(i)
+              const body = content[i]
+              const text = body && L({ en: body.body_en, ar: body.body_ar })
+              const isOpen = enrolled && openLesson === i
               return (
-                <li key={i} className="flex items-center gap-4 p-4 sm:p-5">
-                  {isDone ? <CheckCircle2 className="h-6 w-6 shrink-0 text-teal-500" /> : <Circle className="h-6 w-6 shrink-0 text-navy-200" />}
-                  <div className="min-w-0 flex-1">
+                <li key={i} className="p-4 sm:p-5">
+                  <div className="flex items-center gap-4">
+                  {isDone ? <CheckCircle2 className="h-6 w-6 shrink-0 text-teal-500" /> : owned ? <Circle className="h-6 w-6 shrink-0 text-navy-200" /> : <Lock className="h-5 w-5 shrink-0 text-navy-300" />}
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 text-start disabled:cursor-default"
+                    onClick={() => setOpenLesson(isOpen ? null : i)}
+                    disabled={!enrolled}
+                    aria-expanded={isOpen}
+                  >
                     <p className="text-xs font-semibold text-navy-400">{t('course.lesson', { n: i + 1 })} · {t('common.minutes', { n: minutes })}</p>
-                    <p className={`font-medium ${isDone ? 'text-navy-500' : 'text-navy-900'}`}>{L(lesson)}</p>
-                  </div>
+                    <p className={`flex items-center gap-1.5 font-medium ${isDone ? 'text-navy-500' : 'text-navy-900'}`}>
+                      {L(lesson)}
+                      {enrolled && <ChevronDown className={`h-4 w-4 shrink-0 text-navy-400 transition ${isOpen ? 'rotate-180' : ''}`} />}
+                    </p>
+                  </button>
                   {enrolled &&
                     (isDone ? (
                       <span className="text-xs font-semibold text-teal-600">{t('course.completedLesson')}</span>
@@ -105,6 +147,23 @@ export default function CourseDetail() {
                         <PlayCircle className="h-4 w-4" /> <span className="hidden sm:inline">{t('course.markComplete')}</span>
                       </Button>
                     ))}
+                  </div>
+                  {isOpen && (
+                    <div className="mt-4 space-y-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-navy-700 sm:ms-10">
+                      {text || body?.video_url ? (
+                        <>
+                          {text && <p className="whitespace-pre-line">{text}</p>}
+                          {body.video_url && (
+                            <a href={body.video_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-teal-700 hover:underline">
+                              <Video className="h-4 w-4" /> {t('course.watchVideo')}
+                            </a>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-navy-500">{t('course.noContent')}</p>
+                      )}
+                    </div>
+                  )}
                 </li>
               )
             })}
@@ -127,14 +186,26 @@ export default function CourseDetail() {
                   </p>
                 )}
               </>
-            ) : user ? (
-              <Button className="w-full" size="lg" onClick={onEnroll} loading={enrolling}>
-                {t('courses.enroll')}
-              </Button>
             ) : (
-              <Button className="w-full" size="lg" to={`/login?next=${encodeURIComponent(`/courses/${course.id}`)}`}>
-                {t('course.loginToEnroll')}
-              </Button>
+              <>
+                <p className="mb-4 text-3xl font-extrabold text-navy-900">{isFree(course) ? t('courses.free') : fmtPrice(course.price)}</p>
+                {owned ? (
+                  <Button className="w-full" size="lg" onClick={onEnroll} loading={enrolling}>
+                    {isFree(course) ? t('courses.enroll') : t('course.start')}
+                  </Button>
+                ) : !user ? (
+                  <Button className="w-full" size="lg" to={`/login?next=${encodeURIComponent(`/courses/${course.id}`)}`}>
+                    {t(isFree(course) ? 'course.loginToEnroll' : 'course.loginToBuy')}
+                  </Button>
+                ) : (
+                  <>
+                    <Button className="w-full" size="lg" onClick={onBuy} loading={buying}>
+                      {buying ? t('course.buying') : t('course.buy')}
+                    </Button>
+                    <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-navy-500"><ShieldCheck className="h-4 w-4 text-teal-600" /> {t('course.securePayment')}</p>
+                  </>
+                )}
+              </>
             )}
             <dl className="mt-6 space-y-3 text-sm">
               <div className="flex justify-between gap-4"><dt className="text-navy-500">{t('course.instructor')}</dt><dd className="font-medium text-navy-900">{course.instructor}</dd></div>

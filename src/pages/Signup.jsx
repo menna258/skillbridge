@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, MailCheck } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { isEmail, isStrongPassword } from '../lib/validation'
-import { delay } from '../lib/storage'
 import AuthShell from '../components/layout/AuthShell'
 import Field from '../components/ui/Field'
 import PasswordField from '../components/ui/PasswordField'
@@ -20,6 +19,7 @@ export default function Signup() {
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sentTo, setSentTo] = useState('')
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
 
@@ -42,14 +42,28 @@ export default function Signup() {
     setFormError('')
     if (!validate()) return
     setLoading(true)
-    await delay(800)
     const res = await signup(form)
+    setLoading(false)
     if (!res.ok) {
-      setLoading(false)
       setFormError(t(`auth.errors.${res.error}`))
       return
     }
+    if (res.confirm) {
+      setSentTo(form.email.trim())
+      return
+    }
     toast(t('auth.created', { name: res.user.name.split(' ')[0] }))
+  }
+
+  if (sentTo) {
+    return (
+      <AuthShell title={t('auth.checkEmailTitle')} subtitle={t('auth.checkEmail', { email: sentTo })}>
+        <div className="flex flex-col items-center gap-5 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600"><MailCheck className="h-7 w-7" /></div>
+          <Button to={`/login${search}`} className="w-full" size="lg">{t('nav.login')}</Button>
+        </div>
+      </AuthShell>
+    )
   }
 
   return (

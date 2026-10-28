@@ -13,6 +13,12 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Contact from './pages/Contact'
 import NotFound from './pages/NotFound'
+import PaymentResult from './pages/PaymentResult'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminOrders from './pages/admin/AdminOrders'
+import AdminCourses from './pages/admin/AdminCourses'
+import AdminCourseEdit from './pages/admin/AdminCourseEdit'
+import AdminMessages from './pages/admin/AdminMessages'
 
 export default function App() {
   return (
@@ -28,6 +34,13 @@ export default function App() {
         <Route path="contact" element={<Contact />} />
         <Route path="dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
+        <Route path="payment/result" element={<RequireAuth><PaymentResult /></RequireAuth>} />
+        <Route path="admin" element={<AdminLayout />}>
+          <Route index element={<AdminOrders />} />
+          <Route path="courses" element={<AdminCourses />} />
+          <Route path="courses/:id" element={<AdminCourseEdit />} />
+          <Route path="messages" element={<AdminMessages />} />
+        </Route>
         <Route path="login" element={<GuestOnly><Login /></GuestOnly>} />
         <Route path="signup" element={<GuestOnly><Signup /></GuestOnly>} />
         <Route path="*" element={<NotFound />} />

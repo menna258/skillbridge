@@ -22,6 +22,12 @@ export function LanguageProvider({ children }) {
   const fmtNum = useCallback((n) => new Intl.NumberFormat(locale).format(n), [locale])
   const fmtPct = useCallback((n) => `${new Intl.NumberFormat(locale).format(n)}${lang === 'ar' ? '٪' : '%'}`, [locale, lang])
 
+  // Course prices are stored in piasters (100 piasters = 1 EGP).
+  const fmtPrice = useCallback(
+    (piasters) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 2 }).format(piasters / 100),
+    [locale],
+  )
+
   const fmtDate = useCallback(
     (iso, opts = { day: 'numeric', month: 'short', year: 'numeric' }) =>
       new Intl.DateTimeFormat(locale, opts).format(new Date(iso)),
@@ -52,8 +58,8 @@ export function LanguageProvider({ children }) {
   const toggle = useCallback(() => setLang((l) => (l === 'en' ? 'ar' : 'en')), [])
 
   const value = useMemo(
-    () => ({ lang, dir, setLang, toggle, t, L, fmtNum, fmtPct, fmtDate, isRTL: dir === 'rtl' }),
-    [lang, dir, toggle, t, L, fmtNum, fmtPct, fmtDate],
+    () => ({ lang, dir, setLang, toggle, t, L, fmtNum, fmtPct, fmtPrice, fmtDate, isRTL: dir === 'rtl' }),
+    [lang, dir, toggle, t, L, fmtNum, fmtPct, fmtPrice, fmtDate],
   )
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>

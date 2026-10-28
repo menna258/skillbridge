@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { readJSON, writeJSON, removeKey, hashPassword, todayKey } from '../lib/storage'
-import { buildDemoData, DEMO_USER } from '../lib/demo'
-import { courseById, lessonMinutes } from '../data/courses'
+import { readJSON, writeJSON, removeKey, todayKey } from '../lib/storage'
+import { supabase, ORDERS_TABLE } from '../lib/supabase'
+import { courseById, isFree, lessonMinutes, loadCatalog } from '../lib/catalog'
+import { Spinner } from '../components/ui/Feedback'
 
 const AppContext = createContext(null)
 
@@ -16,20 +17,69 @@ export const emptyData = () => ({
   activity: [],
 })
 
-const USERS = 'sb_users'
-const SESSION = 'sb_session'
+// Accounts live in Supabase Auth. Learning progress stays in this browser,
+// keyed by the account id; what a Student owns always comes from the database.
 const GUEST = 'guest'
 const dataKey = (id) => `sb_data_${id}`
 const loadData = (id) => ({ ...emptyData(), ...readJSON(dataKey(id), {}) })
 
-export function AppProvider({ children }) {
-  const [users, setUsers] = useState(() => readJSON(USERS, []))
-  const [sessionId, setSessionId] = useState(() => readJSON(SESSION, null))
-  const user = users.find((u) => u.id === sessionId) || null
-  const ownerId = user ? user.id : GUEST
-  const [data, setData] = useState(() => loadData(user ? user.id : GUEST))
+const toUser = (u) =>
+  u && {
+    id: u.id,
+    email: u.email,
+    name: u.user_metadata?.name || u.email.split('@')[0],
+    university: u.user_metadata?.university || '',
+    createdAt: u.created_at,
+    isAdmin: u.app_metadata?.skillbridge_admin === true,
+  }
 
-  // Reload data whenever the signed-in account changes.
+const authError = (error) => {
+  const msg = error?.message?.toLowerCase() || ''
+  if (msg.includes('already registered')) return 'taken'
+  if (msg.includes('invalid login')) return 'invalid'
+  if (msg.includes('not confirmed')) return 'unconfirmed'
+  return 'server'
+}
+
+export function AppProvider({ children }) {
+  const [authUser, setAuthUser] = useState(undefined)
+  const [catalogVersion, setCatalogVersion] = useState(0)
+  const [ownedIds, setOwnedIds] = useState([])
+  const user = useMemo(() => toUser(authUser), [authUser])
+  const ownerId = user ? user.id : GUEST
+  const [data, setData] = useState(() => loadData(GUEST))
+
+  useEffect(() => {
+    if (!supabase) {
+      setAuthUser(null)
+      return
+    }
+    supabase.auth.getSession().then(({ data: { session } }) => setAuthUser(session?.user ?? null))
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => setAuthUser(session?.user ?? null))
+    return () => sub.subscription.unsubscribe()
+  }, [])
+
+  // What the viewer can see and owns depends on who is signed in.
+  const refreshCatalog = useCallback(async () => {
+    try {
+      await loadCatalog()
+    } catch {
+      /* keep the last catalogue we had */
+    }
+    if (supabase && user) {
+      const { data: rows } = await supabase.from(ORDERS_TABLE).select('course_id').eq('student_id', user.id).eq('status', 'paid')
+      setOwnedIds((rows || []).map((r) => r.course_id))
+    } else {
+      setOwnedIds([])
+    }
+    setCatalogVersion((v) => v + 1)
+  }, [user?.id])
+
+  useEffect(() => {
+    if (authUser !== undefined) refreshCatalog()
+  }, [authUser === undefined, refreshCatalog])
+
+  // Reload progress whenever the signed-in account changes.
   useEffect(() => {
     setData(loadData(ownerId))
   }, [ownerId])
@@ -45,72 +95,56 @@ export function AppProvider({ children }) {
     [ownerId],
   )
 
-  const saveUsers = (list) => {
-    setUsers(list)
-    writeJSON(USERS, list)
-  }
-
-  const startSession = (id) => {
-    // Carry a guest assessment over to the account if it has none yet.
+  // Carry a guest assessment over to the account if it has none yet.
+  const adoptGuestData = (id) => {
     const guest = loadData(GUEST)
     const own = loadData(id)
     if (guest.assessment && !own.assessment) {
       writeJSON(dataKey(id), { ...own, assessment: guest.assessment })
       removeKey(dataKey(GUEST))
     }
-    writeJSON(SESSION, id)
-    setSessionId(id)
   }
 
   const signup = async ({ name, email, password, university }) => {
-    const normalized = email.trim().toLowerCase()
-    if (users.some((u) => u.email === normalized)) return { ok: false, error: 'taken' }
-    const newUser = {
-      id: `u-${Date.now().toString(36)}`,
-      name: name.trim(),
-      email: normalized,
-      university: university.trim(),
-      passwordHash: await hashPassword(password),
-      createdAt: new Date().toISOString(),
-    }
-    saveUsers([...users, newUser])
-    startSession(newUser.id)
-    return { ok: true, user: newUser }
+    if (!supabase) return { ok: false, error: 'server' }
+    const { data: res, error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: { data: { name: name.trim(), university: university.trim() }, emailRedirectTo: `${window.location.origin}/login` },
+    })
+    if (error) return { ok: false, error: authError(error) }
+    // Supabase hides "already registered" behind an account with no identities.
+    if (res.user && !res.user.identities?.length) return { ok: false, error: 'taken' }
+    if (!res.session) return { ok: true, confirm: true, user: toUser(res.user) }
+    adoptGuestData(res.user.id)
+    return { ok: true, user: toUser(res.user) }
   }
 
   const login = async (email, password) => {
-    const normalized = email.trim().toLowerCase()
-    const hash = await hashPassword(password)
-    const found = users.find((u) => u.email === normalized && u.passwordHash === hash)
-    if (!found) return { ok: false, error: 'invalid' }
-    startSession(found.id)
-    return { ok: true, user: found }
+    if (!supabase) return { ok: false, error: 'server' }
+    const { data: res, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+    if (error) return { ok: false, error: authError(error) }
+    adoptGuestData(res.user.id)
+    return { ok: true, user: toUser(res.user) }
   }
 
-  const loginDemo = async () => {
-    let demo = users.find((u) => u.email === DEMO_USER.email)
-    if (!demo) {
-      demo = { ...DEMO_USER, passwordHash: await hashPassword(DEMO_USER.password), createdAt: new Date().toISOString() }
-      delete demo.password
-      saveUsers([...users, demo])
-      writeJSON(dataKey(demo.id), buildDemoData())
-    } else if (!readJSON(dataKey(demo.id), null)) {
-      writeJSON(dataKey(demo.id), buildDemoData())
-    }
-    writeJSON(SESSION, demo.id)
-    setSessionId(demo.id)
-    return { ok: true, user: demo }
-  }
+  const logout = () => supabase?.auth.signOut()
 
-  const logout = () => {
-    removeKey(SESSION)
-    setSessionId(null)
-  }
-
-  const updateAccount = (fields) => {
+  const updateAccount = async (fields) => {
     if (!user) return
-    saveUsers(users.map((u) => (u.id === user.id ? { ...u, ...fields } : u)))
+    const { data: res } = await supabase.auth.updateUser({ data: fields })
+    if (res?.user) setAuthUser(res.user)
   }
+
+  const owns = useCallback(
+    (courseId) => {
+      const c = courseById[courseId]
+      if (!c || !user) return false
+      return (isFree(c) && !c.hidden) || ownedIds.includes(courseId)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user, ownedIds, catalogVersion],
+  )
 
   const actions = {
     saveAssessment: (result) => update((d) => ({ ...d, assessment: result, roadmapCareer: null })),
@@ -153,10 +187,13 @@ export function AppProvider({ children }) {
   }
 
   const value = useMemo(
-    () => ({ user, data, signup, login, loginDemo, logout, updateAccount, ...actions }),
+    () => ({ user, data, signup, login, logout, updateAccount, owns, refreshCatalog, catalogVersion, ...actions }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, data],
+    [user, data, owns, catalogVersion],
   )
+
+  // Wait for the session and the first catalogue load before rendering pages.
+  if (catalogVersion === 0) return <Spinner />
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
