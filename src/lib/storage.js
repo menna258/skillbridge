@@ -24,17 +24,6 @@ export function removeKey(key) {
   }
 }
 
-// Demo-only password hashing so plain passwords are never stored.
-export async function hashPassword(password) {
-  if (window.crypto?.subtle) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`skillbridge:${password}`))
-    return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('')
-  }
-  let h = 5381
-  for (const ch of password) h = (h * 33) ^ ch.charCodeAt(0)
-  return `fallback-${(h >>> 0).toString(16)}`
-}
-
 export const todayKey = (d = new Date()) => {
   const z = (n) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`

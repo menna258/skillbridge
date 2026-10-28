@@ -18,7 +18,7 @@ const selectCls =
 
 export default function Courses() {
   const { t } = useLang()
-  const { user, data, catalogVersion } = useApp()
+  const { user, data, owns, catalogVersion } = useApp()
   const [params, setParams] = useSearchParams()
   const q = params.get('q') || ''
   const cat = params.get('cat') || 'all'
@@ -36,7 +36,7 @@ export default function Courses() {
   const results = useMemo(() => {
     const term = q.trim().toLowerCase()
     const list = courses.filter((c) => {
-      if (c.hidden && !data.enrollments[c.id]) return false
+      if (c.hidden && !owns(c.id)) return false
       if (cat !== 'all' && c.category !== cat) return false
       if (level !== 'all' && c.level !== level) return false
       if (mine && !data.enrollments[c.id]) return false
@@ -52,7 +52,7 @@ export default function Courses() {
       short: (a, b) => a.hours - b.hours,
     }
     return list.sort(sorters[sort] || sorters.popular)
-  }, [q, cat, level, sort, mine, data.enrollments, catalogVersion])
+  }, [q, cat, level, sort, mine, data.enrollments, owns, catalogVersion])
 
   const loading = useFilteredLoading(`${q}|${cat}|${level}|${sort}|${mine}`)
   const filtered = q || cat !== 'all' || level !== 'all' || mine

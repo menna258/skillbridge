@@ -33,7 +33,7 @@ Other commands:
 | `/about` | About + FAQ |
 | `/assessment` | 12-question career assessment with scored results |
 | `/roadmap` | Personalised learning roadmap (add `?career=data` etc. to explore other paths) |
-| `/courses`, `/courses/:id` | Course catalogue with prices, course page with buying, locked lessons and lesson tracking |
+| `/courses`, `/courses/:id` | Course catalogue with prices, course page with buying, Lesson Content for owners and lesson tracking |
 | `/payment/result` | Where Paymob sends the Student back after paying |
 | `/jobs` | Job listings with search, filters, save and apply |
 | `/contact` | Contact form (Supabase) |

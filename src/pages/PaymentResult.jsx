@@ -25,7 +25,7 @@ export default function PaymentResult() {
       const { data } = await supabase.from(ORDERS_TABLE).select('id, course_id, status').eq('id', orderId).maybeSingle()
       setOrder(data)
       if (data?.status === 'paid') return refreshCatalog()
-      if (data?.status === 'failed') return
+      // Keep checking a Failed Order too: Paymob can still confirm it late.
       if (++tries >= 30) return setGaveUp(true)
       timer = setTimeout(check, 2000)
     }
@@ -41,12 +41,13 @@ export default function PaymentResult() {
     title = t('payment.paidTitle')
     text = t('payment.paid')
     action = <Button to={`/courses/${order.course_id}`}>{t('payment.start')}</Button>
-  } else if (status === 'failed' || (!order && gaveUp) || !orderId) {
+  } else if (status === 'failed') {
     icon = <XCircle className="h-8 w-8 text-red-600" />
     title = t('payment.failedTitle')
     text = t('payment.failed')
-    action = <Button to={order ? `/courses/${order.course_id}` : '/courses'}>{t('payment.retry')}</Button>
-  } else if (gaveUp) {
+    action = <Button to={`/courses/${order.course_id}`}>{t('payment.retry')}</Button>
+  } else if (gaveUp || !orderId) {
+    // No confirmation we can trust: never claim the Student wasn't charged.
     icon = <Clock className="h-8 w-8 text-amber-600" />
     title = t('payment.pendingTitle')
     text = t('payment.pending')
