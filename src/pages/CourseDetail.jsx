@@ -108,7 +108,7 @@ export default function CourseDetail() {
               <span className="inline-flex items-center gap-1.5"><UserRound className="h-4 w-4" /> {course.instructor}</span>
             </div>
           </div>
-          <SmartImage src={course.image} alt={L(course.title)} className="aspect-video animate-fade-in rounded-2xl lg:aspect-auto lg:h-full" />
+          <SmartImage src={course.image} alt="" className="aspect-video animate-fade-in rounded-2xl lg:aspect-auto lg:h-full" />
         </div>
       </section>
 
@@ -143,8 +143,8 @@ export default function CourseDetail() {
                     (isDone ? (
                       <span className="text-xs font-semibold text-teal-600">{t('course.completedLesson')}</span>
                     ) : (
-                      <Button size="sm" variant="outline" onClick={() => onComplete(i)}>
-                        <PlayCircle className="h-4 w-4" /> <span className="hidden sm:inline">{t('course.markComplete')}</span>
+                      <Button size="sm" variant="outline" onClick={() => onComplete(i)} aria-label={t('course.markComplete')}>
+                        <PlayCircle className="h-4 w-4" aria-hidden="true" /> <span className="hidden sm:inline" aria-hidden="true">{t('course.markComplete')}</span>
                       </Button>
                     ))}
                   </div>

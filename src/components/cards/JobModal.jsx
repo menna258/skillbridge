@@ -8,7 +8,7 @@ import { isEmail, isPhone, isUrl } from '../../lib/validation'
 import { delay } from '../../lib/storage'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
-import Field from '../ui/Field'
+import Field, { focusFirstInvalid } from '../ui/Field'
 import { CompanyLogo, useJobMeta } from './JobCard'
 
 export default function JobModal({ job, startOnApply, onClose }) {
@@ -53,7 +53,7 @@ export default function JobModal({ job, startOnApply, onClose }) {
 
   const submit = async (e) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validate()) return focusFirstInvalid(e.currentTarget)
     setSending(true)
     await delay(900)
     apply(job.id, {
@@ -70,11 +70,11 @@ export default function JobModal({ job, startOnApply, onClose }) {
   return (
     <Modal open={!!job} onClose={onClose} title={view === 'apply' ? t('jobs.applyTitle', { title: L(job.title) }) : t('jobs.details')} wide>
       {view === 'success' ? (
-        <div className="flex flex-col items-center py-6 text-center">
+        <div className="flex flex-col items-center py-6 text-center" role="status">
           <div className="mb-4 flex h-16 w-16 animate-slide-in items-center justify-center rounded-full bg-teal-50 text-teal-600">
             <CheckCircle2 className="h-9 w-9" />
           </div>
-          <h3 className="text-xl font-bold text-navy-900">{t('jobs.successTitle')}</h3>
+          <h3 ref={(el) => el?.focus()} tabIndex={-1} className="text-xl font-bold text-navy-900 focus:outline-none">{t('jobs.successTitle')}</h3>
           <p className="mt-2 max-w-sm text-sm text-navy-500">{t('jobs.successText', { company: job.company })}</p>
           <div className="mt-6 flex gap-2">
             <Button variant="outline" onClick={onClose}>{t('common.close')}</Button>
@@ -84,16 +84,16 @@ export default function JobModal({ job, startOnApply, onClose }) {
       ) : view === 'apply' ? (
         !user ? (
           <div className="flex flex-col items-center py-6 text-center">
-            <LogIn className="mb-3 h-10 w-10 text-teal-500" />
+            <LogIn className="mb-3 h-10 w-10 text-teal-600" />
             <p className="mb-5 text-sm text-navy-600">{t('auth.needLogin')}</p>
             <Button to={`/login?next=${encodeURIComponent('/jobs')}`} onClick={onClose}>{t('jobs.loginToApply')}</Button>
           </div>
         ) : (
           <form onSubmit={submit} noValidate className="grid gap-4 sm:grid-cols-2">
             <Field label={t('jobs.fullName')} value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" />
-            <Field label={t('jobs.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" dir="ltr" />
+            <Field label={t('jobs.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" spellCheck={false} dir="ltr" />
             <Field label={t('jobs.phone')} type="tel" value={form.phone} onChange={set('phone')} error={errors.phone} placeholder="+20 1XX XXX XXXX" autoComplete="tel" dir="ltr" />
-            <Field label={t('jobs.portfolio')} value={form.portfolio} onChange={set('portfolio')} error={errors.portfolio} placeholder="https://" dir="ltr" />
+            <Field label={t('jobs.portfolio')} type="url" inputMode="url" spellCheck={false} value={form.portfolio} onChange={set('portfolio')} error={errors.portfolio} placeholder="https://" dir="ltr" />
             <Field
               as="textarea"
               className="sm:col-span-2"

@@ -11,13 +11,11 @@ import { jobMatch } from '../lib/progress'
 import useFilteredLoading from '../lib/useFilteredLoading'
 import PageHeader from '../components/ui/PageHeader'
 import SearchBox from '../components/ui/SearchBox'
+import { selectCls } from '../components/ui/Field'
 import Button from '../components/ui/Button'
 import JobCard from '../components/cards/JobCard'
 import JobModal from '../components/cards/JobModal'
 import { EmptyState, SkeletonCard } from '../components/ui/Feedback'
-
-const selectCls =
-  'h-10 rounded-xl border border-navy-100 bg-white px-3 text-sm text-navy-800 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100'
 
 export default function Jobs() {
   const { t, L } = useLang()
@@ -55,9 +53,11 @@ export default function Jobs() {
         .toLowerCase()
         .includes(term)
     })
-    return sort === 'match' && canMatch
-      ? list.sort((a, b) => jobMatch(b, data) - jobMatch(a, data))
-      : list.sort((a, b) => a.postedDays - b.postedDays)
+    if (sort === 'match' && canMatch) {
+      const score = Object.fromEntries(list.map((j) => [j.id, jobMatch(j, data)]))
+      return list.sort((a, b) => score[b.id] - score[a.id])
+    }
+    return list.sort((a, b) => a.postedDays - b.postedDays)
   }, [q, type, location, field, saved, sort, canMatch, data])
 
   const loading = useFilteredLoading(`${q}|${type}|${location}|${field}|${saved}|${sort}`)
@@ -111,7 +111,7 @@ export default function Jobs() {
           </label>
           {user && (
             <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-navy-700">
-              <input type="checkbox" checked={saved} onChange={(e) => setParam('saved', e.target.checked ? '1' : '', '')} className="h-4 w-4 accent-teal-500" />
+              <input type="checkbox" checked={saved} onChange={(e) => setParam('saved', e.target.checked ? '1' : '', '')} className="h-4 w-4 accent-teal-600" />
               {t('jobs.savedOnly')}
             </label>
           )}
@@ -119,14 +119,15 @@ export default function Jobs() {
             {results.length === 1 ? t('common.result') : t('common.results', { n: results.length })}
           </span>
           {filtered && (
-            <button onClick={() => setParams({}, { replace: true })} className="text-sm font-semibold text-teal-600 hover:underline">
+            <button type="button" onClick={() => setParams({}, { replace: true })} className="text-sm font-semibold text-teal-600 hover:underline">
               {t('common.clearFilters')}
             </button>
           )}
         </div>
 
+        <h2 className="sr-only">{t('nav.jobs')}</h2>
         {loading ? (
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2" aria-busy="true">
             {Array.from({ length: 4 }, (_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : results.length ? (

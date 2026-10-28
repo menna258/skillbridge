@@ -28,7 +28,7 @@ export default function About() {
 
       <section className="container-page grid items-center gap-12 py-20 lg:grid-cols-2">
         <Reveal>
-          <SmartImage src={img('photo-1522202176988-66273c2fd55f', 1000)} alt="Students collaborating on a project" className="aspect-[4/3] rounded-3xl shadow-soft" />
+          <SmartImage src={img('photo-1522202176988-66273c2fd55f', 1000)} alt="" className="aspect-[4/3] rounded-3xl shadow-soft" />
         </Reveal>
         <div className="space-y-8">
           <Reveal>
@@ -77,14 +77,23 @@ export default function About() {
             return (
               <div key={n} className="card overflow-hidden">
                 <button
+                  type="button"
+                  id={`faq-q${n}`}
                   onClick={() => setOpenFaq(open ? -1 : i)}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-start font-semibold text-navy-900"
+                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-start font-semibold text-navy-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-600"
                   aria-expanded={open}
+                  aria-controls={`faq-a${n}`}
                 >
                   {t(`about.q${n}`)}
-                  <ChevronDown className={`h-5 w-5 shrink-0 text-navy-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-navy-500 transition-transform ${open ? 'rotate-180' : ''}`} />
                 </button>
-                <div className={`grid transition-all duration-300 ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                <div
+                  id={`faq-a${n}`}
+                  role="region"
+                  aria-labelledby={`faq-q${n}`}
+                  inert={open ? undefined : ''}
+                  className={`grid transition-[grid-template-rows] duration-300 ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                >
                   <div className="overflow-hidden">
                     <p className="px-5 pb-5 text-sm leading-relaxed text-navy-600">{t(`about.a${n}`)}</p>
                   </div>
@@ -96,10 +105,10 @@ export default function About() {
       </section>
 
       <section className="container-page pb-20">
-        <div className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-teal-500 px-8 py-10 text-white sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-teal-700 px-8 py-10 text-white sm:flex-row">
           <div>
             <h2 className="text-2xl font-extrabold">{t('about.ctaTitle')}</h2>
-            <p className="mt-2 text-teal-50">{t('about.ctaText')}</p>
+            <p className="mt-2 text-white/90">{t('about.ctaText')}</p>
           </div>
           <Button variant="navy" size="lg" to={user ? '/dashboard' : '/signup'} className="shrink-0">
             {user ? t('nav.dashboard') : t('nav.signup')}

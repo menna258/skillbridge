@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { AlertCircle, CheckCircle2, Clock, Database, MapPin, MessageSquare } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Clock, MapPin, MessageSquare } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
 import { supabase, isSupabaseConfigured, CONTACT_TABLE } from '../lib/supabase'
 import { isEmail } from '../lib/validation'
 import { readJSON, writeJSON } from '../lib/storage'
+import useUnsavedWarning from '../lib/useUnsavedWarning'
 import PageHeader from '../components/ui/PageHeader'
-import Field from '../components/ui/Field'
+import Field, { focusFirstInvalid } from '../components/ui/Field'
 import Button from '../components/ui/Button'
 
 const topics = ['general', 'support', 'partnership', 'feedback']
@@ -19,6 +20,8 @@ export default function Contact() {
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle') // idle | sending | sent | error
   const [savedLocally, setSavedLocally] = useState(false)
+
+  useUnsavedWarning(status !== 'sent' && form.message.trim().length > 0)
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
@@ -34,7 +37,7 @@ export default function Contact() {
 
   const submit = async (e) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validate()) return focusFirstInvalid(e.currentTarget)
     setStatus('sending')
     const row = {
       name: form.name.trim(),
@@ -82,19 +85,15 @@ export default function Contact() {
               </div>
             </div>
           ))}
-          <p className="flex items-start gap-2 rounded-xl bg-navy-50 p-4 text-xs text-navy-600">
-            <Database className="mt-0.5 h-4 w-4 shrink-0 text-teal-600" />
-            {isSupabaseConfigured ? t('contact.connected') : t('contact.notConnected')}
-          </p>
         </aside>
 
         <div className="card p-6 sm:p-8">
           {status === 'sent' ? (
-            <div className="flex animate-fade-up flex-col items-center py-10 text-center">
+            <div className="flex animate-fade-up flex-col items-center py-10 text-center" role="status">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50 text-teal-600">
                 <CheckCircle2 className="h-9 w-9" />
               </div>
-              <h2 className="text-xl font-bold text-navy-900">{t('contact.successTitle')}</h2>
+              <h2 ref={(el) => el?.focus()} tabIndex={-1} className="text-xl font-bold text-navy-900 focus:outline-none">{t('contact.successTitle')}</h2>
               <p className="mt-2 max-w-sm text-sm text-navy-500">{savedLocally ? t('contact.successLocal') : t('contact.successText')}</p>
               <Button variant="outline" className="mt-6" onClick={() => setStatus('idle')}>{t('contact.another')}</Button>
             </div>
@@ -106,7 +105,7 @@ export default function Contact() {
                 </p>
               )}
               <Field label={t('contact.name')} value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" maxLength={100} />
-              <Field label={t('contact.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" dir="ltr" />
+              <Field label={t('contact.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" spellCheck={false} dir="ltr" />
               <Field as="select" className="sm:col-span-2" label={t('contact.topic')} value={form.topic} onChange={set('topic')}>
                 {topics.map((tp) => <option key={tp} value={tp}>{t(`contact.topics.${tp}`)}</option>)}
               </Field>

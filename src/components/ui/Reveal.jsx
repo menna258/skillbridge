@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 // Fades children in when they scroll into view.
-export default function Reveal({ children, delay = 0, className = '' }) {
+export default function Reveal({ as: Tag = 'div', children, delay = 0, className = '' }) {
   const ref = useRef(null)
   const [shown, setShown] = useState(false)
   useEffect(() => {
@@ -23,12 +23,12 @@ export default function Reveal({ children, delay = 0, className = '' }) {
     return () => obs.disconnect()
   }, [])
   return (
-    <div
+    <Tag
       ref={ref}
-      className={`transition-all duration-700 ease-out ${shown ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'} ${className}`}
+      className={`transition-[opacity,transform] duration-700 ease-out ${shown ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'} ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
-    </div>
+    </Tag>
   )
 }

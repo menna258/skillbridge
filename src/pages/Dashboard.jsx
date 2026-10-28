@@ -31,7 +31,7 @@ function Panel({ title, hint, action, children, className = '' }) {
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <h2 className="font-bold text-navy-900">{title}</h2>
-          {hint && <p className="mt-0.5 text-xs text-navy-400">{hint}</p>}
+          {hint && <p className="mt-0.5 text-xs text-navy-500">{hint}</p>}
         </div>
         {action}
       </div>
@@ -63,9 +63,11 @@ export default function Dashboard() {
   const week = weeklyActivity(data)
   const weekTotal = week.reduce((s, d) => s + d.minutes, 0)
   const appliedIds = new Set(data.applications.map((a) => a.jobId))
-  const recommended = [...jobs]
+  const recommended = jobs
     .filter((j) => !appliedIds.has(j.id))
-    .sort((a, b) => jobMatch(b, data) - jobMatch(a, data))
+    .map((j) => ({ j, score: jobMatch(j, data) }))
+    .sort((a, b) => b.score - a.score)
+    .map(({ j }) => j)
     .slice(0, 3)
   const continueList = enrolledIds
     .map((id) => ({ course: courseById[id], p: courseProgress(data, id) }))
@@ -92,10 +94,10 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(([Icon, key, value, to], i) => (
           <Link key={key} to={to} className="card group animate-fade-up p-5 transition hover:-translate-y-0.5 hover:shadow-soft" style={{ animationDelay: `${i * 60}ms` }}>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600 transition group-hover:bg-teal-500 group-hover:text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600 transition group-hover:bg-teal-600 group-hover:text-white">
               <Icon className="h-5 w-5" />
             </div>
-            <p className="mt-4 text-2xl font-extrabold text-navy-900">{value}</p>
+            <p className="mt-4 text-2xl font-extrabold tabular-nums text-navy-900">{value}</p>
             <p className="text-sm text-navy-500">{t(key)}</p>
           </Link>
         ))}
@@ -127,7 +129,7 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center gap-4">
                 <Ring value={roadmap.pct} size={84} stroke={8}>
-                  <span className="text-lg font-extrabold text-navy-900">{fmtPct(roadmap.pct)}</span>
+                  <span className="text-lg font-extrabold tabular-nums text-navy-900">{fmtPct(roadmap.pct)}</span>
                 </Ring>
                 <div>
                   <p className="flex items-center gap-1.5 font-bold text-navy-900">
@@ -141,7 +143,7 @@ export default function Dashboard() {
                 {next ? (
                   <>
                     <p className="mt-1 text-sm font-medium text-navy-900">{L(next.step.title)}</p>
-                    <p className="mt-0.5 text-xs text-navy-400">{t('roadmap.stage', { n: next.stageIndex + 1 })} · {L(next.stage.title)}</p>
+                    <p className="mt-0.5 text-xs text-navy-500">{t('roadmap.stage', { n: next.stageIndex + 1 })} · {L(next.stage.title)}</p>
                   </>
                 ) : (
                   <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-navy-900"><CheckCircle2 className="h-4 w-4 text-teal-500" /> {t('dashboard.allDone')}</p>
@@ -189,7 +191,7 @@ export default function Dashboard() {
               {continueList.slice(0, 4).map(({ course, p }) => (
                 <li key={course.id}>
                   <Link to={`/courses/${course.id}`} className="flex items-center gap-4 rounded-xl p-2 transition hover:bg-slate-50">
-                    <SmartImage src={course.image} alt={L(course.title)} className="h-14 w-20 shrink-0 rounded-lg" />
+                    <SmartImage src={course.image} alt="" className="h-14 w-20 shrink-0 rounded-lg" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-navy-900">{L(course.title)}</p>
                       <div className="mt-2 flex items-center gap-3">

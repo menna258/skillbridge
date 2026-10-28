@@ -115,7 +115,7 @@ export default function Roadmap() {
         )}
 
         {progress.pct === 100 && (
-          <div className="mt-6 flex animate-fade-up flex-col items-center justify-between gap-3 rounded-2xl bg-teal-500 p-5 text-white sm:flex-row">
+          <div className="mt-6 flex animate-fade-up flex-col items-center justify-between gap-3 rounded-2xl bg-teal-700 p-5 text-white sm:flex-row">
             <p className="flex items-center gap-2 font-semibold"><CheckCircle2 className="h-5 w-5" /> {t('roadmap.complete')}</p>
             <Button to="/jobs" variant="white" size="sm"><Briefcase className="h-4 w-4" /> {t('roadmap.findJobs')}</Button>
           </div>
@@ -129,7 +129,7 @@ export default function Roadmap() {
               <li key={si} className="relative ps-14">
                 <span
                   className={`absolute start-0 top-0 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ring-4 ring-slate-50 ${
-                    stageDone ? 'bg-teal-500 text-white' : 'bg-navy-800 text-white'
+                    stageDone ? 'bg-teal-600 text-white' : 'bg-navy-800 text-white'
                   }`}
                 >
                   {stageDone ? <Check className="h-5 w-5" /> : fmtNum(si + 1)}
@@ -150,8 +150,8 @@ export default function Roadmap() {
                           <div className="flex items-start gap-3">
                             <button
                               onClick={() => onToggle(step.id)}
-                              className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition ${
-                                done ? 'border-teal-500 bg-teal-500 text-white' : 'border-navy-200 hover:border-teal-400'
+                              className={`relative mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-colors after:absolute after:-inset-2.5 after:content-[""] ${
+                                done ? 'border-teal-600 bg-teal-600 text-white' : 'border-navy-400 hover:border-teal-600'
                               }`}
                               role="checkbox"
                               aria-checked={done}

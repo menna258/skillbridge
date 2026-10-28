@@ -8,13 +8,11 @@ import { skills as skillNames } from '../data/skills'
 import useFilteredLoading from '../lib/useFilteredLoading'
 import PageHeader from '../components/ui/PageHeader'
 import SearchBox from '../components/ui/SearchBox'
+import { selectCls } from '../components/ui/Field'
 import CourseCard from '../components/cards/CourseCard'
 import Button from '../components/ui/Button'
 import CareerIcon from '../components/ui/CareerIcon'
 import { EmptyState, SkeletonCard } from '../components/ui/Feedback'
-
-const selectCls =
-  'h-10 rounded-xl border border-navy-100 bg-white px-3 text-sm text-navy-800 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100'
 
 export default function Courses() {
   const { t } = useLang()
@@ -97,7 +95,7 @@ export default function Courses() {
           </label>
           {user && (
             <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-navy-700">
-              <input type="checkbox" checked={mine} onChange={(e) => setParam('mine', e.target.checked ? '1' : '', '')} className="h-4 w-4 rounded border-navy-300 accent-teal-500" />
+              <input type="checkbox" checked={mine} onChange={(e) => setParam('mine', e.target.checked ? '1' : '', '')} className="h-4 w-4 rounded border-navy-300 accent-teal-600" />
               {t('courses.myCourses')}
             </label>
           )}
@@ -105,14 +103,15 @@ export default function Courses() {
             {results.length === 1 ? t('common.result') : t('common.results', { n: results.length })}
           </span>
           {filtered && (
-            <button onClick={() => setParams({}, { replace: true })} className="text-sm font-semibold text-teal-600 hover:underline">
+            <button type="button" onClick={() => setParams({}, { replace: true })} className="text-sm font-semibold text-teal-600 hover:underline">
               {t('common.clearFilters')}
             </button>
           )}
         </div>
 
+        <h2 className="sr-only">{t('nav.courses')}</h2>
         {loading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
             {Array.from({ length: Math.min(6, Math.max(results.length, 3)) }, (_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : results.length ? (

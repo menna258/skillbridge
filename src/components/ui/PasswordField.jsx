@@ -8,12 +8,13 @@ export default function PasswordField(props) {
   const [show, setShow] = useState(false)
   return (
     <div className="relative">
-      <Field {...props} type={show ? 'text' : 'password'} dir="ltr" />
+      <Field {...props} type={show ? 'text' : 'password'} dir="ltr" className="[&_input]:pe-12" />
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
-        className="absolute end-2 top-[34px] rounded-md p-1.5 text-navy-400 hover:text-navy-700"
+        className="absolute end-1 top-[27px] flex h-10 w-10 items-center justify-center rounded-lg text-navy-500 hover:text-navy-800"
         aria-label={show ? t('auth.hide') : t('auth.show')}
+        aria-pressed={show}
       >
         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>

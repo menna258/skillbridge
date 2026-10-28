@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { isEmail, isStrongPassword } from '../lib/validation'
 import AuthShell from '../components/layout/AuthShell'
-import Field from '../components/ui/Field'
+import Field, { focusFirstInvalid } from '../components/ui/Field'
 import PasswordField from '../components/ui/PasswordField'
 import Button from '../components/ui/Button'
 
@@ -40,7 +40,7 @@ export default function Signup() {
   const submit = async (e) => {
     e.preventDefault()
     setFormError('')
-    if (!validate()) return
+    if (!validate()) return focusFirstInvalid(e.currentTarget)
     setLoading(true)
     const res = await signup(form)
     setLoading(false)
@@ -77,8 +77,8 @@ export default function Signup() {
         )}
         <Field label={t('auth.fullName')} value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" />
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label={t('auth.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" dir="ltr" />
-          <Field label={t('auth.university')} value={form.university} onChange={set('university')} error={errors.university} placeholder={t('auth.universityPlaceholder')} />
+          <Field label={t('auth.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" spellCheck={false} dir="ltr" />
+          <Field label={t('auth.university')} value={form.university} onChange={set('university')} error={errors.university} placeholder={t('auth.universityPlaceholder')} autoComplete="organization" />
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
           <PasswordField label={t('auth.password')} value={form.password} onChange={set('password')} error={errors.password} hint={t('auth.passwordHint')} autoComplete="new-password" />
@@ -86,10 +86,17 @@ export default function Signup() {
         </div>
         <div>
           <label className="flex cursor-pointer items-start gap-3 text-sm text-navy-600">
-            <input type="checkbox" checked={form.terms} onChange={set('terms')} className="mt-0.5 h-4 w-4 shrink-0 accent-teal-500" />
+            <input
+              type="checkbox"
+              checked={form.terms}
+              onChange={set('terms')}
+              aria-invalid={!!errors.terms}
+              aria-describedby={errors.terms ? 'terms-err' : undefined}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-teal-600"
+            />
             {t('auth.terms')}
           </label>
-          {errors.terms && <p className="mt-1.5 text-xs font-medium text-red-600">{errors.terms}</p>}
+          {errors.terms && <p id="terms-err" role="alert" className="mt-1.5 text-xs font-medium text-red-600">{errors.terms}</p>}
         </div>
         <Button type="submit" className="w-full" size="lg" loading={loading}>
           {loading ? t('auth.creating') : t('auth.signupButton')}
@@ -97,7 +104,7 @@ export default function Signup() {
       </form>
       <p className="mt-6 text-center text-sm text-navy-500">
         {t('auth.haveAccount')}{' '}
-        <Link to={`/login${search}`} className="font-semibold text-teal-600 hover:underline">{t('nav.login')}</Link>
+        <Link to={`/login${search}`} className="font-semibold text-teal-700 hover:underline">{t('nav.login')}</Link>
       </p>
     </AuthShell>
   )
