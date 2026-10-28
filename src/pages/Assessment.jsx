@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock, Map, RotateCcw, Sparkles, Target, UserPlus } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useApp } from '../context/AppContext'
@@ -115,8 +115,23 @@ function Quiz({ index, setIndex, answers, setAnswers, onFinish }) {
   const choose = (i) => setAnswers((a) => ({ ...a, [q.id]: i }))
   const next = () => (isLast ? onFinish() : setIndex(index + 1))
 
+  const heading = useRef(null)
+  const optionRefs = useRef([])
+  const firstQuestion = useRef(true)
+
+  // Each new question takes focus so keyboard and screen-reader users hear it
+  // without tabbing back from the top.
+  useEffect(() => {
+    if (firstQuestion.current) firstQuestion.current = false
+    else heading.current?.focus()
+  }, [index])
+
+  // Number keys pick an answer; Enter moves on. Ignored while a control has
+  // focus so it never fights with that control's own keys.
   useEffect(() => {
     const onKey = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      if (e.target.closest?.('button, a, input, textarea, select')) return
       const n = Number(e.key)
       if (n >= 1 && n <= q.options.length) choose(n - 1)
       if (e.key === 'Enter' && selected !== undefined) next()
@@ -124,6 +139,17 @@ function Quiz({ index, setIndex, answers, setAnswers, onFinish }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
+
+  // Arrow keys move between options like a native radio group.
+  const onOptionKey = (e, i) => {
+    const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key]
+    if (!step) return
+    e.preventDefault()
+    const to = (i + step + q.options.length) % q.options.length
+    choose(to)
+    optionRefs.current[to]?.focus()
+  }
+  const focusable = selected ?? 0
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -135,32 +161,38 @@ function Quiz({ index, setIndex, answers, setAnswers, onFinish }) {
         <ProgressBar value={(answered / questions.length) * 100} label={t('assessment.title')} />
       </div>
 
-      <div key={q.id} className="card animate-fade-up p-6 sm:p-8">
-        <h2 className="text-xl font-bold leading-snug text-navy-900 sm:text-2xl">{L(q.text)}</h2>
-        <div className="mt-6 grid gap-3" role="radiogroup" aria-label={L(q.text)}>
-          {q.options.map((o, i) => {
-            const on = selected === i
-            return (
-              <button
-                key={i}
-                role="radio"
-                aria-checked={on}
-                onClick={() => choose(i)}
-                className={`flex items-center gap-4 rounded-xl border-2 p-4 text-start transition ${
-                  on ? 'border-teal-500 bg-teal-50/60' : 'border-navy-100 hover:border-navy-300 hover:bg-slate-50'
-                }`}
-              >
-                <span
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${
-                    on ? 'bg-teal-500 text-white' : 'bg-navy-50 text-navy-500'
+      <div className="card p-6 sm:p-8">
+        <div key={q.id} className="animate-fade-up">
+          <h2 ref={heading} tabIndex={-1} className="text-balance text-xl font-bold leading-snug text-navy-900 sm:text-2xl focus:outline-none">{L(q.text)}</h2>
+          <div className="mt-6 grid gap-3" role="radiogroup" aria-label={L(q.text)}>
+            {q.options.map((o, i) => {
+              const on = selected === i
+              return (
+                <button
+                  key={i}
+                  ref={(el) => (optionRefs.current[i] = el)}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  tabIndex={i === focusable ? 0 : -1}
+                  onClick={() => choose(i)}
+                  onKeyDown={(e) => onOptionKey(e, i)}
+                  className={`flex items-center gap-4 rounded-xl border-2 p-4 text-start transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 ${
+                    on ? 'border-teal-600 bg-teal-50/60' : 'border-navy-200 hover:border-navy-400 hover:bg-slate-50'
                   }`}
                 >
-                  {on ? <CheckCircle2 className="h-5 w-5" /> : fmtNum(i + 1)}
-                </span>
-                <span className={`font-medium ${on ? 'text-navy-900' : 'text-navy-700'}`}>{L(o.label)}</span>
-              </button>
-            )
-          })}
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${
+                      on ? 'bg-teal-600 text-white' : 'bg-navy-50 text-navy-600'
+                    }`}
+                  >
+                    {on ? <CheckCircle2 className="h-5 w-5" /> : fmtNum(i + 1)}
+                  </span>
+                  <span className={`font-medium ${on ? 'text-navy-900' : 'text-navy-700'}`}>{L(o.label)}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         <div className="mt-8 flex items-center justify-between gap-3">
@@ -186,7 +218,7 @@ function Result({ result, isGuest, onRetake }) {
       <div className="mb-8 text-center">
         <h2 className="text-2xl font-extrabold text-navy-900 sm:text-3xl">{t('assessment.resultTitle')}</h2>
         <p className="mt-2 text-navy-500">{t('assessment.resultSubtitle')}</p>
-        <p className="mt-1 text-xs text-navy-400">{t('assessment.takenOn', { date: fmtDate(result.completedAt) })}</p>
+        <p className="mt-1 text-xs text-navy-500">{t('assessment.takenOn', { date: fmtDate(result.completedAt) })}</p>
       </div>
 
       <div className="card overflow-hidden lg:grid lg:grid-cols-[1.1fr_1fr]">

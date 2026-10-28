@@ -54,7 +54,7 @@ export default function JobCard({ job, onOpen, onToggleSave }) {
         </div>
         <button
           onClick={() => onToggleSave(job)}
-          className={`rounded-lg p-2 transition ${saved ? 'bg-teal-50 text-teal-600' : 'text-navy-300 hover:bg-navy-50 hover:text-navy-600'}`}
+          className={`rounded-lg p-2.5 transition-colors ${saved ? 'bg-teal-50 text-teal-700' : 'text-navy-500 hover:bg-navy-50 hover:text-navy-700'}`}
           aria-label={saved ? t('jobs.unsave') : t('jobs.save')}
           aria-pressed={saved}
           title={saved ? t('jobs.unsave') : t('jobs.save')}
@@ -76,7 +76,7 @@ export default function JobCard({ job, onOpen, onToggleSave }) {
       </div>
 
       <div className="mt-5 flex items-center gap-2 border-t border-navy-50 pt-4">
-        <button onClick={() => onOpen(job)} className="h-9 flex-1 rounded-xl border border-navy-100 text-sm font-semibold text-navy-700 transition hover:bg-navy-50">
+        <button onClick={() => onOpen(job)} className="h-10 flex-1 rounded-xl border border-navy-300 text-sm font-semibold text-navy-700 transition-colors hover:bg-navy-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
           {t('jobs.details')}
         </button>
         {applied ? (
@@ -84,7 +84,7 @@ export default function JobCard({ job, onOpen, onToggleSave }) {
             <CheckCircle2 className="h-4 w-4" /> {t('jobs.applied')}
           </span>
         ) : (
-          <button onClick={() => onOpen(job, true)} className="h-9 flex-1 rounded-xl bg-teal-500 text-sm font-semibold text-white transition hover:bg-teal-600">
+          <button onClick={() => onOpen(job, true)} className="h-10 flex-1 rounded-xl bg-teal-600 text-sm font-semibold text-white transition-colors hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
             {t('jobs.apply')}
           </button>
         )}

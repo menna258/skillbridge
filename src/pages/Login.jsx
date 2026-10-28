@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { isEmail } from '../lib/validation'
 import AuthShell from '../components/layout/AuthShell'
-import Field from '../components/ui/Field'
+import Field, { focusFirstInvalid } from '../components/ui/Field'
 import PasswordField from '../components/ui/PasswordField'
 import Button from '../components/ui/Button'
 
@@ -30,7 +30,7 @@ export default function Login() {
     if (!form.password) errs.password = t('auth.errors.required')
     setErrors(errs)
     setFormError('')
-    if (Object.keys(errs).length) return
+    if (Object.keys(errs).length) return focusFirstInvalid(e.currentTarget)
     setLoading(true)
     const res = await login(form.email, form.password)
     if (!res.ok) {
@@ -49,7 +49,7 @@ export default function Login() {
             <AlertCircle className="h-4 w-4 shrink-0" /> {formError}
           </p>
         )}
-        <Field label={t('auth.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" dir="ltr" />
+        <Field label={t('auth.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" spellCheck={false} dir="ltr" />
         <PasswordField label={t('auth.password')} value={form.password} onChange={set('password')} error={errors.password} autoComplete="current-password" />
         <Button type="submit" className="w-full" size="lg" loading={loading}>
           {loading ? t('auth.loggingIn') : t('auth.loginButton')}
@@ -58,7 +58,7 @@ export default function Login() {
 
       <p className="mt-6 text-center text-sm text-navy-500">
         {t('auth.noAccount')}{' '}
-        <Link to={`/signup${search}`} className="font-semibold text-teal-600 hover:underline">{t('nav.signup')}</Link>
+        <Link to={`/signup${search}`} className="font-semibold text-teal-700 hover:underline">{t('nav.signup')}</Link>
       </p>
     </AuthShell>
   )

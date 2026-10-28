@@ -19,13 +19,13 @@ export default function CourseCard({ course }) {
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-navy-50 bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft"
     >
       <div className="relative">
-        <SmartImage src={course.image} alt={L(course.title)} className="h-44" imgClassName="transition duration-500 group-hover:scale-105" />
+        <SmartImage src={course.image} alt="" className="h-44" imgClassName="transition duration-500 group-hover:scale-105" />
         <span className="absolute start-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-navy-800 shadow-sm">
           <CareerIcon id={course.category} className="h-3.5 w-3.5 text-teal-600" />
           {t(`careers.${course.category}`)}
         </span>
         {progress?.complete && (
-          <span className="absolute end-3 top-3 inline-flex items-center gap-1 rounded-full bg-teal-500 px-2.5 py-1 text-xs font-semibold text-white">
+          <span className="absolute end-3 top-3 inline-flex items-center gap-1 rounded-full bg-teal-700 px-2.5 py-1 text-xs font-semibold text-white">
             <CheckCircle2 className="h-3.5 w-3.5" /> {t('courses.completed')}
           </span>
         )}
@@ -33,7 +33,7 @@ export default function CourseCard({ course }) {
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center gap-2 text-xs font-medium">
           <span className="rounded-md bg-navy-50 px-2 py-0.5 text-navy-600">{t(`levels.${course.level}`)}</span>
-          <span className="inline-flex items-center gap-1 text-amber-600">
+          <span className="inline-flex items-center gap-1 text-amber-700">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {fmtNum(course.rating)}
           </span>
         </div>

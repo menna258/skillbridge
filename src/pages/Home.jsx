@@ -57,11 +57,11 @@ export default function Home() {
             <span className="inline-flex animate-fade-up items-center gap-2 rounded-full bg-teal-50 px-3.5 py-1.5 text-sm font-semibold text-teal-700 ring-1 ring-teal-100">
               <Sparkles className="h-4 w-4" /> {t('home.badge')}
             </span>
-            <h1 className="mt-6 animate-fade-up text-4xl font-extrabold leading-tight tracking-tight text-navy-900 [animation-delay:80ms] sm:text-5xl lg:text-[3.4rem]">
+            <h1 className="mt-6 text-balance text-4xl font-extrabold leading-tight tracking-tight text-navy-900 sm:text-5xl lg:text-[3.4rem]">
               {t('home.title1')}{' '}
               <span className="bg-gradient-to-r from-teal-500 to-navy-600 bg-clip-text text-transparent">{t('home.titleHighlight')}</span>
             </h1>
-            <p className="mt-5 max-w-xl animate-fade-up text-lg leading-relaxed text-navy-500 [animation-delay:160ms]">{t('home.subtitle')}</p>
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-navy-500">{t('home.subtitle')}</p>
             <div className="mt-8 flex animate-fade-up flex-col gap-3 [animation-delay:240ms] sm:flex-row">
               <Button to="/assessment" size="lg">
                 {t('home.ctaAssessment')} <ArrowRight className="h-5 w-5 rtl:rotate-180" />
@@ -74,7 +74,7 @@ export default function Home() {
               {stats.map(([n, key]) => (
                 <div key={key}>
                   <dt className="sr-only">{t(key)}</dt>
-                  <dd className="text-3xl font-extrabold text-navy-900">{fmtNum(n)}</dd>
+                  <dd className="text-3xl font-extrabold tabular-nums text-navy-900">{fmtNum(n)}</dd>
                   <dd className="text-sm text-navy-500">{t(key)}</dd>
                 </div>
               ))}
@@ -84,12 +84,13 @@ export default function Home() {
           <div className="relative mx-auto w-full max-w-lg animate-fade-in [animation-delay:200ms]">
             <SmartImage
               src={img('photo-1523240795612-9a054b0db644', 1000)}
-              alt="University students studying together"
+              alt=""
+              priority
               className="aspect-[4/5] rounded-[2rem] shadow-soft"
             />
             <div className="absolute -start-4 top-10 w-60 animate-float rounded-2xl bg-white p-4 shadow-soft sm:-start-10">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-navy-400">{t('home.floatMatch')}</p>
+                <p className="text-xs font-semibold text-navy-500">{t('home.floatMatch')}</p>
                 {!result && <DemoBadge>{t('common.demo')}</DemoBadge>}
               </div>
               <div className="mt-2 flex items-center gap-3">
@@ -126,7 +127,7 @@ export default function Home() {
           {features.map(([Icon, title, text, to], i) => (
             <Reveal key={title} delay={i * 80}>
               <Link to={to} className="card group block h-full p-6 transition duration-300 hover:-translate-y-1 hover:border-teal-200 hover:shadow-soft">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-navy-900 text-teal-300 transition group-hover:bg-teal-500 group-hover:text-white">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-navy-900 text-teal-300 transition group-hover:bg-teal-600 group-hover:text-white">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="text-lg font-bold text-navy-900">{t(title)}</h3>
@@ -151,13 +152,11 @@ export default function Home() {
           </Reveal>
           <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map(([Icon, title, text], i) => (
-              <Reveal key={title} delay={i * 100}>
-                <li className="relative h-full rounded-2xl border border-navy-700 bg-navy-800/60 p-6">
-                  <span className="absolute end-5 top-5 text-4xl font-extrabold text-navy-700">{fmtNum(i + 1)}</span>
-                  <Icon className="h-8 w-8 text-teal-300" />
-                  <h3 className="mt-5 font-bold">{t(title)}</h3>
-                  <p className="mt-2 text-sm text-navy-200">{t(text)}</p>
-                </li>
+              <Reveal as="li" key={title} delay={i * 100} className="relative h-full rounded-2xl border border-navy-700 bg-navy-800/60 p-6">
+                <span className="absolute end-5 top-5 text-4xl font-extrabold text-navy-700" aria-hidden="true">{fmtNum(i + 1)}</span>
+                <Icon className="h-8 w-8 text-teal-300" />
+                <h3 className="mt-5 font-bold">{t(title)}</h3>
+                <p className="mt-2 text-sm text-navy-200">{t(text)}</p>
               </Reveal>
             ))}
           </ol>
@@ -174,7 +173,7 @@ export default function Home() {
             <Reveal key={c.id} delay={(i % 3) * 80}>
               <Link to={`/roadmap?career=${c.id}`} className="card group block h-full overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-soft">
                 <div className="relative">
-                  <SmartImage src={c.image} alt={L(c.title)} className="h-44" imgClassName="transition duration-500 group-hover:scale-105" />
+                  <SmartImage src={c.image} alt="" className="h-44" imgClassName="transition duration-500 group-hover:scale-105" />
                   <span className="absolute start-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-navy-800">
                     {t(`careers.demand.${c.demand}`)}
                   </span>
@@ -206,7 +205,7 @@ export default function Home() {
             {studentStories.map((s, i) => (
               <Reveal key={s.id} delay={(i % 2) * 100}>
                 <figure className="card flex h-full gap-5 p-6">
-                  <SmartImage src={s.photo} alt={L(s.name)} className="h-16 w-16 shrink-0 rounded-full" />
+                  <SmartImage src={s.photo} alt="" className="h-16 w-16 shrink-0 rounded-full" />
                   <div className="flex-1">
                     <blockquote className="leading-relaxed text-navy-700">“{L(s.quote)}”</blockquote>
                     <figcaption className="mt-4">
@@ -217,7 +216,7 @@ export default function Home() {
                       <p className="text-sm text-navy-500">{L(s.university)} · {L(careerById[s.career].title)}</p>
                       <div className="mt-3">
                         <ProgressBar value={s.progress} label={L(s.name)} />
-                        <p className="mt-1 text-xs text-navy-400">{t('home.roadmapDone', { n: s.progress })}</p>
+                        <p className="mt-1 text-xs text-navy-500">{t('home.roadmapDone', { n: s.progress })}</p>
                       </div>
                     </figcaption>
                   </div>

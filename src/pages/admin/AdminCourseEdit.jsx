@@ -177,7 +177,7 @@ export default function AdminCourseEdit() {
         <Field className="sm:col-span-2" label={t('admin.image')} hint={t('admin.imageHint')} value={form.image} onChange={set('image')} error={errors.image} dir="ltr" />
         <Field label={t('admin.price')} hint={t('admin.priceHint')} type="number" min="0" step="0.01" value={form.priceEgp} onChange={set('priceEgp')} error={errors.price} />
         <label className="flex items-center gap-3 self-center text-sm font-medium text-navy-800">
-          <input type="checkbox" checked={form.hidden} onChange={set('hidden')} className="h-4 w-4 accent-teal-500" />
+          <input type="checkbox" checked={form.hidden} onChange={set('hidden')} className="h-4 w-4 accent-teal-600" />
           {t('admin.hiddenLabel')}
         </label>
         <div className="sm:col-span-2">
@@ -188,7 +188,7 @@ export default function AdminCourseEdit() {
                 type="button"
                 key={s}
                 onClick={() => toggleSkill(s)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${form.skills.includes(s) ? 'bg-teal-500 text-white' : 'bg-navy-50 text-navy-600 hover:bg-navy-100'}`}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${form.skills.includes(s) ? 'bg-teal-600 text-white' : 'bg-navy-50 text-navy-600 hover:bg-navy-100'}`}
                 aria-pressed={form.skills.includes(s)}
               >
                 {L(skillNames[s])}

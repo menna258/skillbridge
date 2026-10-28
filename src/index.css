@@ -5,6 +5,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Keeps focused or anchored items clear of the sticky 64px header. */
+    scroll-padding-top: 5rem;
   }
   body {
     @apply bg-slate-50 font-sans text-navy-900 antialiased;
@@ -14,6 +16,20 @@
   }
   ::selection {
     @apply bg-teal-200 text-navy-900;
+  }
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Arabic letters join, so any letter-spacing pulls them apart. */
+  [dir='rtl'] [class*='tracking-'] {
+    letter-spacing: normal;
   }
 }
 
@@ -25,13 +41,16 @@
     @apply rounded-2xl border border-navy-50 bg-white shadow-card;
   }
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition;
+    @apply inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2;
   }
   .chip-on {
     @apply border-navy-800 bg-navy-800 text-white;
   }
   .chip-off {
-    @apply border-navy-100 bg-white text-navy-600 hover:border-navy-300;
+    @apply border-navy-300 bg-white text-navy-700 hover:border-navy-400;
+  }
+  .skip-link {
+    @apply fixed start-4 top-3 z-[60] -translate-y-20 rounded-lg bg-navy-900 px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition-transform focus:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400;
   }
 }
 
@@ -40,6 +59,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

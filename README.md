@@ -56,7 +56,7 @@ Other commands:
 
 1. In the Supabase dashboard open **SQL Editor**, paste the contents of `supabase/contact_messages.sql` and run it once. It creates the `skillbridge_contact_messages` table with Row Level Security that only allows inserting messages (visitors cannot read, edit or delete).
 2. Copy `.env.example` to `.env` and fill in your project URL and **publishable** key (Project Settings → API Keys).
-3. Restart `npm run dev`. The note under the contact details changes to “stored securely in the SkillBridge database”.
+3. Restart `npm run dev`, send a test message from the Contact page and check that it shows up in **Table Editor → skillbridge_contact_messages**.
 
 Until `.env` exists, the form still works and keeps messages in the browser (`sb_contact_outbox` in localStorage).
 

@@ -3,7 +3,7 @@ import { ImageOff } from 'lucide-react'
 import { useLang } from '../../i18n/LanguageContext'
 
 // Image with a shimmer while loading and a branded fallback if it fails.
-export default function SmartImage({ src, alt, className = '', imgClassName = '' }) {
+export default function SmartImage({ src, alt, className = '', imgClassName = '', priority = false }) {
   const { t } = useLang()
   const [state, setState] = useState('loading')
   return (
@@ -22,7 +22,8 @@ export default function SmartImage({ src, alt, className = '', imgClassName = ''
         <img
           src={src}
           alt={alt}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchpriority={priority ? 'high' : undefined}
           onLoad={() => setState('loaded')}
           onError={() => setState('error')}
           className={`h-full w-full object-cover transition-opacity duration-500 ${state === 'loaded' ? 'opacity-100' : 'opacity-0'} ${imgClassName}`}

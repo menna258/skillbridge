@@ -31,7 +31,7 @@ export default function Footer() {
           </p>
         </div>
         <div>
-          <h3 className="mb-4 text-sm font-semibold text-white">{t('footer.explore')}</h3>
+          <h2 className="mb-4 text-sm font-semibold text-white">{t('footer.explore')}</h2>
           <ul className="space-y-2.5 text-sm">
             {explore.map(([to, key]) => (
               <li key={to}>
@@ -41,7 +41,7 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <h3 className="mb-4 text-sm font-semibold text-white">{t('footer.account')}</h3>
+          <h2 className="mb-4 text-sm font-semibold text-white">{t('footer.account')}</h2>
           <ul className="space-y-2.5 text-sm">
             {account.map(([to, key]) => (
               <li key={to}>
@@ -52,7 +52,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-navy-900">
-        <div className="container-page flex flex-col items-center justify-between gap-2 py-5 text-xs text-navy-400 sm:flex-row">
+        <div className="container-page flex flex-col items-center justify-between gap-2 py-5 text-xs text-navy-300 sm:flex-row">
           <span>{t('footer.rights', { year: String(new Date().getFullYear()) })}</span>
           <a href="https://unsplash.com" target="_blank" rel="noreferrer" className="hover:text-teal-300">
             {t('footer.photos')}

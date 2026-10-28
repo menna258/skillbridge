@@ -26,7 +26,7 @@ export function Spinner({ label }) {
 
 export function SkeletonCard() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-navy-50 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-navy-50 bg-white" aria-hidden="true">
       <div className="h-40 animate-pulse bg-navy-100" />
       <div className="space-y-3 p-5">
         <div className="h-3 w-1/3 animate-pulse rounded bg-navy-100" />

@@ -9,7 +9,8 @@ import { activeCareerId } from '../lib/progress'
 import { isUrl } from '../lib/validation'
 import { delay } from '../lib/storage'
 import PageHeader from '../components/ui/PageHeader'
-import Field from '../components/ui/Field'
+import Field, { focusFirstInvalid } from '../components/ui/Field'
+import useUnsavedWarning from '../lib/useUnsavedWarning'
 import Button from '../components/ui/Button'
 import CareerIcon from '../components/ui/CareerIcon'
 import { ProgressBar } from '../components/ui/Progress'
@@ -19,14 +20,12 @@ export default function Profile() {
   const { t, L, fmtNum, fmtPct, fmtDate } = useLang()
   const { user, data, updateAccount, updateProfile, resetProgress } = useApp()
   const toast = useToast()
-  const [form, setForm] = useState(() => ({
-    name: user.name,
-    university: user.university || '',
-    ...data.profile,
-  }))
+  const saved = { name: user.name, university: user.university || '', ...data.profile }
+  const [form, setForm] = useState(saved)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
+  useUnsavedWarning(JSON.stringify(form) !== JSON.stringify(saved))
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const toggleSkill = (id) =>
@@ -52,7 +51,7 @@ export default function Profile() {
 
   const save = async (e) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validate()) return focusFirstInvalid(e.currentTarget)
     setSaving(true)
     await delay(700)
     updateAccount({ name: form.name.trim(), university: form.university.trim() })
@@ -88,11 +87,11 @@ export default function Profile() {
             {user.university && (
               <p className="mt-1 flex items-center justify-center gap-1.5 text-sm text-navy-500"><GraduationCap className="h-4 w-4" /> {user.university}</p>
             )}
-            <p className="mt-1 flex items-center justify-center gap-1.5 text-xs text-navy-400">
+            <p className="mt-1 flex items-center justify-center gap-1.5 text-xs text-navy-500">
               <CalendarDays className="h-3.5 w-3.5" /> {t('profile.memberSince', { date: fmtDate(user.createdAt) })}
             </p>
             <div className="mt-5 rounded-xl bg-slate-50 p-4 text-start">
-              <p className="text-xs font-semibold text-navy-400">{t('profile.careerLabel')}</p>
+              <p className="text-xs font-semibold text-navy-500">{t('profile.careerLabel')}</p>
               <p className="mt-1 flex items-center gap-1.5 font-semibold text-navy-900">
                 {career ? <><CareerIcon id={career.id} className="h-4 w-4 text-teal-600" /> {L(career.title)}</> : t('profile.noCareer')}
               </p>
@@ -131,7 +130,7 @@ export default function Profile() {
             <div className="grid gap-5 sm:grid-cols-2">
               <Field label={t('profile.fullName')} value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" />
               <Field label={t('profile.email')} value={user.email} disabled dir="ltr" className="opacity-70" />
-              <Field label={t('profile.university')} value={form.university} onChange={set('university')} error={errors.university} />
+              <Field label={t('profile.university')} value={form.university} onChange={set('university')} error={errors.university} autoComplete="organization" />
               <Field label={t('profile.major')} value={form.major} onChange={set('major')} />
               <Field label={t('profile.gradYear')} type="number" min="2020" max="2035" value={form.gradYear} onChange={set('gradYear')} error={errors.gradYear} />
               <Field as="textarea" className="sm:col-span-2" label={t('profile.bio')} placeholder={t('profile.bioPlaceholder')} value={form.bio} onChange={set('bio')} maxLength={400} />
@@ -145,7 +144,7 @@ export default function Profile() {
               {skillIds.map((id) => {
                 const on = form.skills.includes(id)
                 return (
-                  <button type="button" key={id} onClick={() => toggleSkill(id)} className={`chip ${on ? 'border-teal-500 bg-teal-500 text-white' : 'chip-off'}`} aria-pressed={on}>
+                  <button type="button" key={id} onClick={() => toggleSkill(id)} className={`chip ${on ? 'border-teal-600 bg-teal-600 text-white' : 'chip-off'}`} aria-pressed={on}>
                     {on && <Check className="h-3.5 w-3.5" />} {L(skillNames[id])}
                   </button>
                 )
@@ -156,8 +155,8 @@ export default function Profile() {
           <fieldset>
             <legend className="mb-5 text-lg font-bold text-navy-900">{t('profile.links')}</legend>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label={t('profile.linkedin')} value={form.linkedin} onChange={set('linkedin')} error={errors.linkedin} placeholder="https://linkedin.com/in/…" dir="ltr" />
-              <Field label={t('profile.github')} value={form.github} onChange={set('github')} error={errors.github} placeholder="https://github.com/…" dir="ltr" />
+              <Field label={t('profile.linkedin')} type="url" inputMode="url" spellCheck={false} value={form.linkedin} onChange={set('linkedin')} error={errors.linkedin} placeholder="https://linkedin.com/in/…" dir="ltr" />
+              <Field label={t('profile.github')} type="url" inputMode="url" spellCheck={false} value={form.github} onChange={set('github')} error={errors.github} placeholder="https://github.com/…" dir="ltr" />
             </div>
           </fieldset>
 
