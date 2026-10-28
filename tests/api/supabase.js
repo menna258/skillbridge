@@ -44,25 +44,32 @@ export async function createAdmin() {
 
 // A Course row, inserted with the secret key. Ids start with the test prefix.
 const courseIds = []
-export async function createCourse(fields = {}) {
+export const testCourseId = () => {
   const id = `${PREFIX}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
-  const row = {
-    id,
-    category: 'career',
-    level: 'beginner',
-    hours: 1,
-    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97',
-    instructor: 'Test Instructor',
-    title_en: 'Automated test course',
-    title_ar: 'كورس اختبار آلي',
-    description_en: 'Created and removed by the automated tests.',
-    description_ar: 'بيتعمل ويتمسح في الاختبارات الآلية.',
-    lessons: [{ en: 'Lesson one', ar: 'الدرس الأول' }],
-    ...fields,
-  }
+  courseIds.push(id)
+  return id
+}
+
+// The fields every Course needs, for tests that insert one themselves.
+export const courseRow = (id, fields = {}) => ({
+  id,
+  category: 'career',
+  level: 'beginner',
+  hours: 1,
+  image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97',
+  instructor: 'Test Instructor',
+  title_en: 'Automated test course',
+  title_ar: 'كورس اختبار آلي',
+  description_en: 'Created and removed by the automated tests.',
+  description_ar: 'بيتعمل ويتمسح في الاختبارات الآلية.',
+  lessons: [{ en: 'Lesson one', ar: 'الدرس الأول' }],
+  ...fields,
+})
+
+export async function createCourse(fields = {}) {
+  const row = courseRow(testCourseId(), fields)
   const { error } = await server().from('skillbridge_courses').insert(row)
   if (error) throw error
-  courseIds.push(id)
   return row
 }
 
