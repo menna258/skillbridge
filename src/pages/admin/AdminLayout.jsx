@@ -15,7 +15,7 @@ export default function AdminLayout() {
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />
   if (!user.isAdmin) {
     return (
-      <section className="container-page py-20">
+      <section className="container-page py-20" data-page-title={t('admin.forbidden')}>
         <EmptyState icon={ShieldAlert} title={t('admin.forbidden')} text={t('admin.forbiddenText')} action={<Button to="/">{t('nav.home')}</Button>} />
       </section>
     )
@@ -26,9 +26,10 @@ export default function AdminLayout() {
     ['/admin/courses', 'admin.courses', BookOpen],
     ['/admin/messages', 'admin.messages', Inbox],
   ]
+  const current = tabs.find(([to]) => (to === '/admin' ? location.pathname === to : location.pathname.startsWith(to)))
 
   return (
-    <section className="container-page py-10">
+    <section className="container-page py-10" data-page-title={current ? `${t(current[1])} · ${t('admin.title')}` : t('admin.title')}>
       <h1 className="text-3xl font-extrabold text-navy-900">{t('admin.title')}</h1>
       <nav className="mt-6 flex gap-2 overflow-x-auto border-b border-navy-100">
         {tabs.map(([to, key, Icon]) => (

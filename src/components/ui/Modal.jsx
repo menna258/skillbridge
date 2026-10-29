@@ -42,7 +42,10 @@ export default function Modal({ open, onClose, title, children, wide = false }) 
       root?.removeAttribute('inert')
       document.body.style.overflow = ''
       document.body.style.paddingInlineEnd = ''
-      opener?.focus?.()
+      // The opener may be gone (e.g. its card was filtered out); fall back to
+      // the page so focus doesn't drop to <body>.
+      if (opener?.isConnected) opener.focus()
+      else document.getElementById('main')?.focus({ preventScroll: true })
     }
   }, [open])
 
