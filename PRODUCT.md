@@ -54,3 +54,8 @@ The jobs and the match percentage are what set SkillBridge apart. Courses are no
 2. Arabic-first for Egyptian students, with English equal in completeness.
 3. Honest before impressive: sample data stays labelled as sample, prices stay at zero until payment is real.
 4. Good enough to grade and good enough to launch: no shortcuts that would have to be undone before real students arrive.
+
+## Accessibility & Inclusion
+
+- Target WCAG 2.2 AA on every page, in both Arabic and English.
+- Every flow works by keyboard and screen reader, and motion stops under `prefers-reduced-motion`.
