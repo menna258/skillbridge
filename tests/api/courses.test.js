@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest'
-import { cleanup, configured, createAdmin, createCourse, createStudent, signedIn, visitor } from './supabase'
+import { cleanup, configured, createAdmin, createCourse, createStudent, signedIn, testCourseId, visitor } from './supabase'
 
 const COURSES = 'skillbridge_courses'
 
@@ -7,8 +7,9 @@ const COURSES = 'skillbridge_courses'
 describe.skipIf(!configured)('Course catalogue', () => {
   afterAll(cleanup)
 
+  // Prices are the Admin's to change, so only their shape is checked here.
   it('shows visitors the imported catalogue with a price on every Course', async () => {
-    const { data, error } = await visitor().from(COURSES).select('id, price_piasters, hidden').like('id', 'c-%')
+    const { data, error } = await visitor().from(COURSES).select('id, price_piasters').like('id', 'c-%')
 
     expect(error).toBeNull()
     expect(data.length).toBeGreaterThanOrEqual(22)
@@ -44,7 +45,7 @@ describe.skipIf(!configured)('Course catalogue', () => {
     const course = await createCourse({ price_piasters: 0 })
     const v = visitor()
 
-    const insert = await v.from(COURSES).insert({ ...course, id: `${course.id}-x` })
+    const insert = await v.from(COURSES).insert({ ...course, id: testCourseId() })
     expect(insert.error).not.toBeNull()
 
     await v.from(COURSES).update({ price_piasters: 1 }).eq('id', course.id)
@@ -58,7 +59,7 @@ describe.skipIf(!configured)('Course catalogue', () => {
     const course = await createCourse({ price_piasters: 0 })
     const student = await signedIn(await createStudent())
 
-    const insert = await student.from(COURSES).insert({ ...course, id: `${course.id}-x` })
+    const insert = await student.from(COURSES).insert({ ...course, id: testCourseId() })
     expect(insert.error).not.toBeNull()
 
     await student.from(COURSES).update({ price_piasters: 1 }).eq('id', course.id)
