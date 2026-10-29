@@ -25,6 +25,22 @@ describe.skipIf(!configured)('Student accounts', () => {
     expect(b.id).toBe(a.id)
   })
 
+  // The site's own sign-up call. Only the "email already used" path is tested:
+  // a brand-new sign-up sends a confirmation email, and tests send none.
+  it('tells the sign-up form when the email is already used', async () => {
+    const student = await createStudent()
+    const { data, error } = await visitor().auth.signUp({
+      email: student.email,
+      password: `Pw${Math.random().toString(36).slice(2)}1`,
+      options: { data: { name: 'Someone Else', university: 'Test University' } },
+    })
+
+    expect(error).toBeNull()
+    expect(data.session).toBeNull()
+    // AppContext.signup reads an account with no identities as "taken".
+    expect(data.user.identities ?? []).toEqual([])
+  })
+
   it('refuses a wrong password', async () => {
     const student = await createStudent()
     const { data, error } = await visitor().auth.signInWithPassword({ email: student.email, password: 'Wrong12345' })

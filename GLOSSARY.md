@@ -19,7 +19,7 @@ A Course whose price is zero; any signed-in Student can open its lessons without
 _Avoid_: Trial, sample
 
 **Hidden Course** (كورس مخفي):
-A Course the Admin has taken off the catalogue. New Students can't find or buy it, but Students who already own it keep it.
+A Course the Admin has taken off the catalogue. New Students can't find or buy it, but Students with a Paid Order for it keep it.
 _Avoid_: Deleted course, archived course
 
 **Lesson Content** (محتوى الدرس):
@@ -35,7 +35,7 @@ Where an Order stands: **Pending** (checkout started, not paid yet), **Paid** (t
 _Avoid_: State, stage
 
 **Owns** (يمتلك):
-A Student owns a Course when it is a Free Course or they have a Paid Order for it.
+A Student owns a Course when it is a Free Course that isn't Hidden, or they have a Paid Order for it. Hiding a Free Course closes it to everyone, since nobody holds an Order for it.
 _Avoid_: Enrolled, has access, unlocked
 
 ### Running the site
