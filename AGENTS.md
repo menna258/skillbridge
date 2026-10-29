@@ -1,21 +1,8 @@
 - SkillBridge: منصة تطوير مهني لطلبة الجامعة، بالعربي والإنجليزي. الطالب بيشتري كورسات، وفيه أدمن واحد بس هو صاحبة المشروع.
-- الوظايف وباقي الداتا في src/data. أما الكورسات، فمكانها جدول skillbridge_courses على Supabase، وsrc/data/courses.js بقى أول استيراد بس. ما تخترعش داتا غير كده.
-- المصطلحات في GLOSSARY.md، والقرارات الكبيرة في docs/adr.
-- الشغل متقسّم على GitHub Issues:
-  - الـ Spec في #2، والتيكتات من #3 لـ #11.
-  - كل تيكت بيبان عليه هو مستني أنهي تيكت (Blocked by) جوه GitHub نفسه، وعليه label اسمه ready-for-agent.
-  - التيكت ما يتقفلش غير لما الاختبار الآلي بتاعه يعدّي.
-- كل push على main بيتنشر على Cloudflare Pages لوحده (skillbridge-ar7.pages.dev). شيت الكورس طالب Render، بس Render بيطلب كارت، فاحنا لسه على Cloudflare لحد ما المدرّب يوافق.
-- ملفات supabase/*.sql بتتشغّل بالإيد من SQL Editor، ومفيش migrations. والـ MCP بتاع Supabase مالوش صلاحية على المشروع.
-- الـ Edge Functions بتترفع بالأمر ده:
-  `npx.cmd supabase functions deploy <name> --project-ref zwhyspllkkvtusucvkva --use-api`
-  والـ paymob-webhook بالذات لازم يترفع ومعاه `--no-verify-jwt`.
-- على الجهاز ده، PowerShell بيمنع npm.ps1 وnpx.ps1، فاستخدم npm.cmd وnpx.cmd.
-- الدفع (Paymob، التيكتات #9 لـ #11) متأجل لحد ما يبقى فيه حساب Paymob. لحد كده خلي أسعار الكورسات صفر.
-- الأدمن هو المستخدم اللي عنده app_metadata.skillbridge_admin = true، والعلامة دي بتتحط بأمر SQL بس.
-- الاختبارات (`npm.cmd test`) بتشتغل على مشروع Supabase الحقيقي، لأن الخطة المجانية فيها مشروعين بس ومفيش Docker:
-  - محتاجة ملف .env.test فيه المفتاح السري، والملف ده مش بيترفع على git.
-  - أي حاجة الاختبار بيعملها لازم تبدأ بـ sbtest- وتتمسح في الآخر.
-- فورم Contact بيحفظ في جدول skillbridge_contact_messages على Supabase.
-- بعد أي تعديل: ابعت رسالة من الفورم على لينك pages.dev، واتأكد إنها وصلت الجدول.
+- الوظايف وباقي الداتا في src/data. أما الكورسات، فمكانها جدول skillbridge_courses على Supabase.
+- المصطلحات في GLOSSARY.md، والقرارات الكبيرة في docs/adr، وقواعد المراجعة في CODING_STANDARDS.md.
+- الشغل على GitHub Issues: الـ Spec في #2، والتيكتات من #3 لـ #11. التيكت ما يتقفلش غير لما الاختبار بتاعه يعدّي في CI.
+- النشر، وملفات SQL، والـ Edge Functions، والتأكد من فورم Contact بعد أي تعديل: كله في docs/deploy.md.
+- الاختبارات (`npm.cmd test`) بتشتغل على مشروع Supabase الحقيقي، ومحتاجة ملف .env.test. قواعد كتابتها في tests/api/README.md.
+- على الجهاز ده، PowerShell بيمنع npm.ps1 وnpx.ps1، فاستخدم npm.cmd وnpx.cmd. ومفيش Python، فأي سكربت يتكتب بـ node.
 - صاحبة المشروع مش مبرمجة: كلّمها بالعامية المصرية، وخطوة خطوة، وقولها تضغط فين بالظبط.
