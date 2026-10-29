@@ -20,5 +20,5 @@ npx.cmd supabase functions deploy <name> --project-ref zwhyspllkkvtusucvkva --us
 
 Check the Contact form end to end:
 
-1. On skillbridge-ar7.pages.dev, send a message from the Contact form with an email that starts with `sbtest-` (for example `sbtest-check@example.com`).
-2. Run `node scripts/check-contact.mjs`. It shows the message if it reached `skillbridge_contact_messages`, then deletes it.
+1. On skillbridge-ar7.pages.dev, send a message from the Contact form with a new email that starts with `sbtest-check-` (for example `sbtest-check-1630@example.com`).
+2. Right away, run `node scripts/check-contact.mjs <that email>`. It shows the message if it reached `skillbridge_contact_messages`, then deletes only that one. Wait if the API tests are running: their cleanup removes every `sbtest-` message, yours included.
