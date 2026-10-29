@@ -106,7 +106,7 @@ function Intro({ onStart, hasDraft }) {
 }
 
 function Quiz({ index, setIndex, answers, setAnswers, onFinish }) {
-  const { t, L, fmtNum, fmtPct } = useLang()
+  const { t, L, fmtNum, fmtPct, isRTL } = useLang()
   const q = questions[index]
   const selected = answers[q.id]
   const isLast = index === questions.length - 1
@@ -126,30 +126,42 @@ function Quiz({ index, setIndex, answers, setAnswers, onFinish }) {
     else heading.current?.focus()
   }, [index])
 
-  // Number keys pick an answer; Enter moves on. Ignored while a control has
-  // focus so it never fights with that control's own keys.
+  // Number keys pick an answer; Enter moves on. Ignored while any other control
+  // has focus so it never fights with that control's own keys. The answer
+  // options handle their own Enter in onOptionKey.
   useEffect(() => {
     const onKey = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return
-      if (e.target.closest?.('button, a, input, textarea, select')) return
+      const onOption = e.target.getAttribute?.('role') === 'radio'
+      if (!onOption && e.target.closest?.('button, a, input, textarea, select')) return
       const n = Number(e.key)
-      if (n >= 1 && n <= q.options.length) choose(n - 1)
-      if (e.key === 'Enter' && selected !== undefined) next()
+      if (n >= 1 && n <= q.options.length) {
+        choose(n - 1)
+        if (onOption) optionRefs.current[n - 1]?.focus()
+      }
+      if (e.key === 'Enter' && !onOption && selected !== undefined) next()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
 
-  // Arrow keys move between options like a native radio group.
+  // Arrow keys move between options like a native radio group (Left moves
+  // forward in Arabic). Enter picks the focused option, or moves on once it is
+  // already picked.
   const onOptionKey = (e, i) => {
-    const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key]
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      return selected === i ? next() : choose(i)
+    }
+    const forward = isRTL ? -1 : 1
+    const step = { ArrowDown: 1, ArrowUp: -1, ArrowRight: forward, ArrowLeft: -forward }[e.key]
     if (!step) return
     e.preventDefault()
     const to = (i + step + q.options.length) % q.options.length
     choose(to)
     optionRefs.current[to]?.focus()
   }
-  const focusable = selected ?? 0
+  const tabbableIndex = selected ?? 0
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -174,7 +186,7 @@ function Quiz({ index, setIndex, answers, setAnswers, onFinish }) {
                   type="button"
                   role="radio"
                   aria-checked={on}
-                  tabIndex={i === focusable ? 0 : -1}
+                  tabIndex={i === tabbableIndex ? 0 : -1}
                   onClick={() => choose(i)}
                   onKeyDown={(e) => onOptionKey(e, i)}
                   className={`flex items-center gap-4 rounded-xl border-2 p-4 text-start transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 ${
