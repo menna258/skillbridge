@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T17:45:00+02:00",
+  "title": "Design System: SkillBridge",
+  "extensions": {
+    "colorMeta": {
+      "bridge-teal": { "role": "primary", "displayName": "Bridge Teal", "canonical": "#0a8079", "tonalRamp": ["#124442", "#10514f", "#0d6662", "#0a8079", "#0fa094", "#26bcad", "#93eadd", "#effcfa"] },
+      "bridge-teal-deep": { "role": "primary", "displayName": "Bridge Teal Deep", "canonical": "#0d6662" },
+      "bridge-teal-bright": { "role": "primary", "displayName": "Bridge Teal Bright", "canonical": "#0fa094" },
+      "bridge-teal-mist": { "role": "primary", "displayName": "Teal Mist", "canonical": "#effcfa" },
+      "midnight-navy": { "role": "secondary", "displayName": "Midnight Navy", "canonical": "#0d1733", "tonalRamp": ["#080f22", "#0d1733", "#15234a", "#273f78", "#365294", "#7f95c9", "#d5def0", "#eef2f9"] },
+      "harbor-navy": { "role": "secondary", "displayName": "Harbor Navy", "canonical": "#15234a" },
+      "steel-navy": { "role": "secondary", "displayName": "Steel Navy", "canonical": "#273f78" },
+      "slate-ink": { "role": "neutral", "displayName": "Slate Ink", "canonical": "#536faf" },
+      "fog-line": { "role": "neutral", "displayName": "Fog Line", "canonical": "#d5def0" },
+      "frost-wash": { "role": "neutral", "displayName": "Frost Wash", "canonical": "#eef2f9" },
+      "paper-slate": { "role": "neutral", "displayName": "Paper Slate", "canonical": "#f8fafc" },
+      "white": { "role": "neutral", "displayName": "White", "canonical": "#ffffff" },
+      "alert-red": { "role": "status", "displayName": "Alert Red", "canonical": "#dc2626", "tonalRamp": ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fecaca", "#fef2f2"] },
+      "star-amber": { "role": "status", "displayName": "Star Amber", "canonical": "#fbbf24", "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fde68a", "#fffbeb"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Home hero headline only, with the teal-to-navy gradient phrase." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings and page header titles." },
+      "title": { "displayName": "Title", "purpose": "Course and job card titles." },
+      "body": { "displayName": "Body", "purpose": "Descriptions and form text." },
+      "label": { "displayName": "Label", "purpose": "Badges, meta rows, hints and validation messages." },
+      "body-arabic": { "displayName": "Body (Arabic)", "purpose": "Whole site in Arabic; letter-spacing always off." }
+    },
+    "shadows": [
+      { "name": "card", "value": "0 1px 2px rgba(13,23,51,0.06), 0 8px 24px -12px rgba(13,23,51,0.15)", "purpose": "Every card at rest." },
+      { "name": "soft", "value": "0 10px 30px -12px rgba(13,23,51,0.18)", "purpose": "Hovered cards, menus, dropdowns, skip link." },
+      { "name": "teal-glow", "value": "0 1px 2px rgba(10,128,121,0.2)", "purpose": "Under primary buttons only." }
+    ],
+    "motion": [
+      { "name": "fade-up", "value": "0.6s ease-out, from translateY(16px) and opacity 0", "purpose": "Headings and sections arriving." },
+      { "name": "fade-in", "value": "0.4s ease-out", "purpose": "Simple appearance." },
+      { "name": "slide-in", "value": "0.25s ease-out, from translateY(-8px) scale(0.98)", "purpose": "Menus and dropdowns." },
+      { "name": "float", "value": "6s ease-in-out infinite, 10px", "purpose": "Decorative hero cards." },
+      { "name": "state", "value": "200ms", "purpose": "Button colour and press transitions." },
+      { "name": "lift", "value": "300ms, translateY(-2px to -4px)", "purpose": "Card hover." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action on a screen or card.",
+      "html": "<button class=\"ds-btn-primary\">Take the free assessment</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 20px; border:none; border-radius:12px; background:#0a8079; color:#fff; font:600 14px/1 Inter, Cairo, system-ui, sans-serif; box-shadow:0 1px 2px rgba(10,128,121,0.2); cursor:pointer; transition:background-color .2s, transform .2s; } .ds-btn-primary:hover { background:#0d6662; } .ds-btn-primary:focus-visible { outline:none; box-shadow:0 0 0 2px #fff, 0 0 0 4px #0a8079; } .ds-btn-primary:active { transform:scale(.98); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Second choice beside a primary action.",
+      "html": "<button class=\"ds-btn-outline\">Explore courses</button>",
+      "css": ".ds-btn-outline { height:44px; padding:0 20px; border:1px solid #7f95c9; border-radius:12px; background:#fff; color:#15234a; font:600 14px/1 Inter, Cairo, system-ui, sans-serif; cursor:pointer; transition:background-color .2s, border-color .2s, transform .2s; } .ds-btn-outline:hover { background:#eef2f9; border-color:#536faf; } .ds-btn-outline:focus-visible { outline:none; box-shadow:0 0 0 2px #fff, 0 0 0 4px #0a8079; } .ds-btn-outline:active { transform:scale(.98); }"
+    },
+    {
+      "name": "Navy Button",
+      "kind": "button",
+      "refersTo": "button-navy",
+      "description": "Strong secondary action.",
+      "html": "<button class=\"ds-btn-navy\">View roadmap</button>",
+      "css": ".ds-btn-navy { height:44px; padding:0 20px; border:none; border-radius:12px; background:#15234a; color:#fff; font:600 14px/1 Inter, Cairo, system-ui, sans-serif; cursor:pointer; transition:background-color .2s, transform .2s; } .ds-btn-navy:hover { background:#0d1733; } .ds-btn-navy:focus-visible { outline:none; box-shadow:0 0 0 2px #fff, 0 0 0 4px #0a8079; } .ds-btn-navy:active { transform:scale(.98); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled input with teal focus and red error state.",
+      "html": "<label class=\"ds-field\"><span>Email</span><input placeholder=\"you@university.edu\"></label>",
+      "css": ".ds-field { display:block; font:500 14px/1.4 Inter, Cairo, system-ui, sans-serif; color:#15234a; } .ds-field span { display:block; margin-bottom:6px; } .ds-field input { width:100%; padding:10px 14px; border:1px solid #7f95c9; border-radius:12px; background:#fff; color:#0d1733; font:400 14px Inter, Cairo, system-ui, sans-serif; transition:border-color .2s, box-shadow .2s; } .ds-field input::placeholder { color:#536faf; } .ds-field input:focus { outline:none; border-color:#0a8079; box-shadow:0 0 0 2px rgba(10,128,121,.4); }"
+    },
+    {
+      "name": "Filter Chips",
+      "kind": "chip",
+      "refersTo": "chip-on",
+      "description": "Pill filters; selected is solid navy.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-on\">All</button><button class=\"ds-chip\">Data</button><button class=\"ds-chip\">Design</button></div>",
+      "css": ".ds-chips { display:flex; gap:8px; } .ds-chip { min-height:40px; padding:6px 14px; border:1px solid #7f95c9; border-radius:9999px; background:#fff; color:#1d3061; font:500 14px Inter, Cairo, system-ui, sans-serif; cursor:pointer; transition:border-color .2s, background-color .2s; } .ds-chip:hover { border-color:#536faf; } .ds-chip-on { background:#15234a; border-color:#15234a; color:#fff; } .ds-chip:focus-visible { outline:none; box-shadow:0 0 0 2px #fff, 0 0 0 4px #0a8079; }"
+    },
+    {
+      "name": "Job Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Lifted white card with match badge and one teal action.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card-tags\"><span class=\"ds-tag\">Internship</span><span class=\"ds-match\">72% match</span></div><h3>Junior Data Analyst</h3><p>Sample company</p><div class=\"ds-card-foot\"><button class=\"ds-card-ghost\">Details</button><button class=\"ds-card-go\">Apply</button></div></article>",
+      "css": ".ds-card { max-width:340px; padding:20px; border:1px solid #eef2f9; border-radius:16px; background:#fff; font-family:Inter, Cairo, system-ui, sans-serif; color:#0d1733; box-shadow:0 1px 2px rgba(13,23,51,0.06), 0 8px 24px -12px rgba(13,23,51,0.15); transition:transform .3s, box-shadow .3s; } .ds-card:hover { transform:translateY(-2px); box-shadow:0 10px 30px -12px rgba(13,23,51,0.18); } .ds-card-tags { display:flex; gap:8px; } .ds-tag { padding:2px 8px; border-radius:6px; background:#effcfa; color:#0d6662; font-size:12px; font-weight:600; } .ds-match { padding:2px 8px; border-radius:6px; background:#15234a; color:#fff; font-size:12px; font-weight:600; } .ds-card h3 { margin:6px 0 0; font-size:16px; font-weight:700; line-height:1.375; } .ds-card p { margin:0; color:#365294; font-size:14px; } .ds-card-foot { display:flex; gap:8px; margin-top:20px; padding-top:16px; border-top:1px solid #eef2f9; } .ds-card-foot button { flex:1; height:40px; border-radius:12px; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; } .ds-card-ghost { border:1px solid #7f95c9; background:#fff; color:#1d3061; } .ds-card-go { border:none; background:#0a8079; color:#fff; transition:background-color .2s; } .ds-card-go:hover { background:#0d6662; } .ds-card-foot button:focus-visible { outline:none; box-shadow:0 0 0 2px #fff, 0 0 0 4px #0a8079; }"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link-active",
+      "description": "Sticky blurred header with teal-mist active link.",
+      "html": "<nav class=\"ds-nav\"><strong>SkillBridge</strong><a class=\"ds-nav-on\" href=\"#\">Home</a><a href=\"#\">Courses</a><a href=\"#\">Jobs</a></nav>",
+      "css": ".ds-nav { display:flex; align-items:center; gap:4px; height:64px; padding:0 16px; background:rgba(255,255,255,.9); backdrop-filter:blur(8px); border-bottom:1px solid #d5def0; font-family:Inter, Cairo, system-ui, sans-serif; } .ds-nav strong { margin-inline-end:16px; color:#0d1733; } .ds-nav a { padding:8px 12px; border-radius:8px; color:#273f78; font-size:14px; font-weight:500; text-decoration:none; transition:background-color .2s, color .2s; } .ds-nav a:hover { background:#eef2f9; color:#0d1733; } .ds-nav a.ds-nav-on { background:#effcfa; color:#0d6662; } .ds-nav a:focus-visible { outline:none; box-shadow:0 0 0 2px #0a8079; }"
+    },
+    {
+      "name": "Match Progress",
+      "kind": "custom",
+      "refersTo": "bridge-teal-bright",
+      "description": "Signature progress bar showing how far across the bridge.",
+      "html": "<div class=\"ds-progress\" role=\"progressbar\" aria-valuenow=\"64\" aria-valuemin=\"0\" aria-valuemax=\"100\"><div style=\"width:64%\"></div></div>",
+      "css": ".ds-progress { width:280px; height:8px; border-radius:9999px; background:#d5def0; overflow:hidden; } .ds-progress div { height:100%; border-radius:9999px; background:#0fa094; transition:width .7s ease-out; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Bridge",
+    "overview": "SkillBridge carries a student from the university side to the job side, and every screen should feel like part of that crossing. Navy is the solid ground: the night sky of the inner page headers, the weight of headings, the steady text. Teal is the way forward: the action buttons, the active nav link, the progress bars and match rings that show how far across the student has come. The two colours meet in the hero, where the highlighted words fade from teal into navy.\n\nThe feel is young and lively without being loud. Cards lift a little when you point at them, sections fade up as they arrive, soft teal and navy glows sit blurred behind headers, and rounded corners keep everything friendly. The energy comes from motion and from teal moments, never from new colours. Density stays comfortable: one clear action per card, generous padding, short labels.\n\nArabic is a first-class citizen. Arabic pages switch to Cairo, the whole layout mirrors right-to-left through logical properties (`start`/`end`), and letter-spacing is switched off for Arabic text because Arabic letters join.",
+    "keyCharacteristics": [
+      "Navy and teal only for brand colour; red and amber appear only for meaning (errors, ratings).",
+      "Soft, lifted white cards on a pale slate page.",
+      "Rounded, friendly geometry: 12px buttons and inputs, 16px cards, full pills for chips and badges.",
+      "Motion that rewards: hover lifts, fade-up entrances, progress that fills smoothly, all switched off under reduced motion.",
+      "Bilingual by construction: Inter for English, Cairo for Arabic, mirrored layout."
+    ],
+    "rules": [
+      { "name": "The Two-Colour Rule", "body": "Brand colour is navy or teal, nothing else. No purple, orange, pink or new accents for decoration. Red and amber are allowed only when they carry meaning (an error, a rating, a demo warning).", "section": "colors" },
+      { "name": "The Teal Means Forward Rule", "body": "Teal marks the next step: the button to press, the progress made, the link you are on. If something teal is not an action or a sign of progress, it should be navy.", "section": "colors" },
+      { "name": "The No Tracking in Arabic Rule", "body": "Any letter-spacing is removed under `dir=\"rtl\"`. Arabic letters connect; spacing them breaks the words.", "section": "typography" },
+      { "name": "The Lift on Intent Rule", "body": "Things a student can open lift on hover (cards rise, course images zoom 5%); static containers stay still.", "section": "elevation" }
+    ],
+    "dos": [
+      "**Do** use Bridge Teal for the one main action on each card or screen, and navy or outline for the rest.",
+      "**Do** give every interactive element the 2px teal focus ring with a 2px offset.",
+      "**Do** use logical properties (`start`/`end`) and flip directional icons so Arabic mirrors correctly.",
+      "**Do** let cards lift on hover and sections fade up; keep it lively but quick (0.2–0.6s).",
+      "**Do** keep touch targets at least 40px tall."
+    ],
+    "donts": [
+      "**Don't** introduce any brand colour outside navy and teal (the owner's explicit rule).",
+      "**Don't** use red or amber for decoration; they mean error and rating only.",
+      "**Don't** add letter-spacing to Arabic text.",
+      "**Don't** use pure black text or black shadows; text is Midnight Navy and shadows are navy-tinted.",
+      "**Don't** add motion that ignores `prefers-reduced-motion`; the global rule turns animation off and must stay."
+    ]
+  }
+}
