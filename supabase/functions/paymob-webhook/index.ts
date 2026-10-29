@@ -73,21 +73,26 @@ Deno.serve(async (req) => {
       return new Response('bad signature', { status: 401 })
     }
 
-    const orderId = tx.order?.merchant_order_id
-    if (!orderId) return new Response('no order')
+    // Find the Order by Paymob's order id, which is signed. merchant_order_id is
+    // not, so trusting it would let one payment's signed fields pay another Order.
+    const paymobOrderId = tx.order?.id
+    if (paymobOrderId == null) return new Response('no order')
 
     const admin = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'))
     const { data: order } = await admin
       .from('skillbridge_orders')
-      .select('id, amount_piasters, course_id, student_name, student_email')
-      .eq('id', orderId)
+      .select('id, amount_piasters, currency, course_id, student_name, student_email')
+      .eq('paymob_order_id', String(paymobOrderId))
       .maybeSingle()
-    if (!order) return new Response('unknown order')
+    if (!order) {
+      console.error('No Order for Paymob order', paymobOrderId, 'transaction', tx.id)
+      return new Response('unknown order')
+    }
 
     // Refunds and voids are handled by the Admin in the dashboard.
     if (tx.is_refunded || tx.is_voided || tx.pending) return new Response('ok')
 
-    if (tx.success === true && Number(tx.amount_cents) === order.amount_piasters) {
+    if (tx.success === true && Number(tx.amount_cents) === order.amount_piasters && tx.currency === order.currency) {
       const { data: paid, error } = await admin
         .from('skillbridge_orders')
         .update({ status: 'paid', paid_at: new Date().toISOString(), paymob_transaction_id: String(tx.id) })

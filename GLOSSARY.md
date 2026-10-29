@@ -7,7 +7,7 @@ A bilingual (English/Arabic) career development platform for university students
 ### Catalogue and buying
 
 **Course** (كورس):
-The thing SkillBridge sells: a set of lessons a Student buys to learn a skill. It is the only kind of product on the site.
+The thing SkillBridge sells: a set of lessons a Student buys to learn a skill, either on its own or through a Subscription.
 _Avoid_: Product, item, منتج
 
 **Student** (طالب):
@@ -19,12 +19,16 @@ A Course whose price is zero; any signed-in Student can open its lessons without
 _Avoid_: Trial, sample
 
 **Hidden Course** (كورس مخفي):
-A Course the Admin has taken off the catalogue. New Students can't find or buy it, but Students with a Paid Order for it keep it.
+A Course the Admin has taken off the catalogue. New Students can't find or buy it, and a Subscription no longer opens it, but Students with a Paid Order for it keep it.
 _Avoid_: Deleted course, archived course
 
 **Lesson Content** (محتوى الدرس):
 What a Student actually studies in a lesson: text and an optional video. Only Students who own the Course can see it; lesson titles stay public.
 _Avoid_: Material, resources
+
+**Subscription** (اشتراك):
+A monthly payment that opens every paid Course that isn't Hidden to a Student while it lasts, including Courses added later. It sits beside buying a single Course with an Order; it doesn't replace it.
+_Avoid_: Membership, plan, package, عضوية, باقة
 
 **Order** (طلب):
 A Student's purchase of exactly one Course, paid with real money through online payment.
@@ -35,7 +39,7 @@ Where an Order stands: **Pending** (checkout started, not paid yet), **Paid** (t
 _Avoid_: State, stage
 
 **Owns** (يمتلك):
-A Student owns a Course when it is a Free Course that isn't Hidden, or they have a Paid Order for it. Hiding a Free Course closes it to everyone, since nobody holds an Order for it.
+A Student owns a Course when it is a Free Course that isn't Hidden, when they have a Paid Order for it, or when it is a paid Course that isn't Hidden and their Subscription is still running. Hiding a Course closes it to everyone without a Paid Order for it, Students with a Subscription included. A Student with a Subscription can still buy a Course with an Order, to keep it after the Subscription ends.
 _Avoid_: Enrolled, has access, unlocked
 
 ### Running the site

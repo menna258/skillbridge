@@ -83,13 +83,18 @@ Deno.serve(async (req) => {
       }),
     })
     const intention = await res.json().catch(() => null)
-    if (!res.ok || !intention?.client_secret) {
+    // Paymob's own order id is the only Order link its webhook signs, so a
+    // checkout without one could never be confirmed.
+    if (!res.ok || !intention?.client_secret || !intention?.intention_order_id) {
       console.error('Paymob intention failed', res.status, intention)
       await admin.from('skillbridge_orders').update({ status: 'failed' }).eq('id', order.id)
       return json({ error: 'payment' }, 502)
     }
 
-    await admin.from('skillbridge_orders').update({ paymob_intention_id: String(intention.id) }).eq('id', order.id)
+    await admin
+      .from('skillbridge_orders')
+      .update({ paymob_intention_id: String(intention.id), paymob_order_id: String(intention.intention_order_id) })
+      .eq('id', order.id)
 
     const url = `https://eg.checkout.paymob.com/?publicKey=${encodeURIComponent(env('PAYMOB_PUBLIC_KEY'))}&clientSecret=${encodeURIComponent(intention.client_secret)}`
     return json({ url, orderId: order.id })
