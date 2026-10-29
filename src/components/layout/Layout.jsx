@@ -20,8 +20,11 @@ export default function Layout() {
   }, [pathname])
 
   useEffect(() => {
+    // A page can name itself with data-page-title when its h1 is shared
+    // (the Admin tabs) or missing.
     const id = setTimeout(() => {
-      const h1 = main.current?.querySelector('h1')?.textContent?.trim()
+      const named = main.current?.querySelector('[data-page-title]')?.dataset.pageTitle
+      const h1 = named || main.current?.querySelector('h1')?.textContent?.trim()
       document.title = h1 && pathname !== '/' ? `${h1} · SkillBridge` : 'SkillBridge'
     }, 50)
     return () => clearTimeout(id)
