@@ -7,13 +7,16 @@ const COURSES = 'skillbridge_courses'
 describe.skipIf(!configured)('Course catalogue', () => {
   afterAll(cleanup)
 
-  // Payments wait for a Paymob account (#9), so every imported Course stays free.
-  it('shows visitors the 22 imported Courses, all of them free', async () => {
+  // Prices are the Admin's to change, so only their shape is checked here.
+  it('shows visitors the imported catalogue with a price on every Course', async () => {
     const { data, error } = await visitor().from(COURSES).select('id, price_piasters').like('id', 'c-%')
 
     expect(error).toBeNull()
     expect(data.length).toBeGreaterThanOrEqual(22)
-    expect(data.filter((c) => c.price_piasters !== 0).map((c) => c.id)).toEqual([])
+    for (const c of data) {
+      expect(Number.isInteger(c.price_piasters)).toBe(true)
+      expect(c.price_piasters).toBeGreaterThanOrEqual(0)
+    }
   })
 
   it('shows a visitor the new price after the Admin changes it', async () => {

@@ -1,0 +1,33 @@
+name: Build and test
+
+# Runs on every PR and every push to main, so a failing API test shows a red
+# check before the PR is merged.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# The API tests share the real Supabase project, so runs go one at a time.
+concurrency: supabase-tests
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Public values: the site on pages.dev already ships them to every browser.
+      VITE_SUPABASE_URL: https://zwhyspllkkvtusucvkva.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_JJg4h7vmTMnHXxFqYoPSgA_xSFWEcR-
+      # Added once in GitHub: Settings → Secrets and variables → Actions.
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # Without the secret the tests skip themselves and would pass silently.
+      - name: Check the Supabase secret is set
+        run: test -n "$SUPABASE_SECRET_KEY" || { echo "Add SUPABASE_SECRET_KEY under Settings → Secrets and variables → Actions"; exit 1; }
+      - run: npm test

@@ -7,6 +7,7 @@ They run against the real Supabase project, because the free plan allows only tw
 - Every account and message a test creates is marked `sbtest-…@example.com`.
 - Each test file deletes everything it created when it finishes.
 - Test accounts are created already confirmed, so no emails are sent.
+- Tests assert on the `sbtest-` rows they created. Real rows (the imported Courses, real messages) belong to the Admin, who can change them any time, so a test only reads their shape: that they exist and are well-formed, never a value like a price.
 
 ## Run them
 
