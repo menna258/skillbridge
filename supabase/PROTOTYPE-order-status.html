@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نموذج تجريبي: حالات الطلب</title>
+<!-- PROTOTYPE — throwaway. Not part of the site. Answers one question about Order Status; see the intro box. -->
+<style>
+  :root { --accent:#2f5bd3; --ink:#1d2330; --muted:#6b7280; --line:#e4e7ee; --bg:#f7f8fb; --card:#fff;
+          --ok:#1c7c4a; --bad:#b4332b; --warn:#9a6700; --flash:#fff4c2; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.6 "Segoe UI", Tahoma, sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  h2 { font-size:17px; margin:0 0 12px; }
+  .proto { display:inline-block; background:#ffe1e1; color:var(--bad); font-weight:700; font-size:12px; padding:2px 8px; border-radius:6px; }
+  .intro { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin:12px 0 24px; }
+  .intro p { margin:6px 0; }
+  .grid { display:grid; grid-template-columns: 1.3fr 1fr; gap:20px; align-items:start; }
+  @media (max-width:860px) { .grid { grid-template-columns:1fr; } }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:20px; }
+  .outcome { border-inline-start:4px solid var(--accent); background:#eef2fc; padding:10px 14px; border-radius:6px; margin-bottom:16px; min-height:44px; }
+  .outcome.bad { border-color:var(--bad); background:#fbeceb; }
+  .outcome.warn { border-color:var(--warn); background:#fdf5e1; }
+  button { font:inherit; font-size:14px; border:1px solid var(--accent); background:#fff; color:var(--accent);
+           border-radius:7px; padding:6px 12px; cursor:pointer; margin:3px 0 3px 6px; }
+  button:hover:not(:disabled) { background:var(--accent); color:#fff; }
+  button:disabled { opacity:.35; cursor:default; }
+  button.primary { background:var(--accent); color:#fff; }
+  .row { display:flex; flex-wrap:wrap; align-items:center; gap:4px; }
+  .label { color:var(--muted); font-size:13px; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; }
+  .chip { border-radius:999px; padding:4px 12px; font-size:14px; border:1px solid var(--line); }
+  .chip.yes { background:#e6f4ec; color:var(--ok); border-color:#bfe3cd; }
+  .chip.no { background:#f3f4f6; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  td, th { text-align:start; padding:6px 4px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; }
+  .order { border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:10px; }
+  .order.changed, tr.changed, .email.changed { background:var(--flash); }
+  .status { font-weight:700; padding:1px 10px; border-radius:6px; font-size:13px; }
+  .s-pending { background:#eef2fc; color:var(--accent); }
+  .s-paid { background:#e6f4ec; color:var(--ok); }
+  .s-failed { background:#fbeceb; color:var(--bad); }
+  .s-refunded { background:#f1ecfb; color:#6b3fb3; }
+  .facts { color:var(--muted); font-size:13px; margin:4px 0 6px; }
+  .email { border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:8px; font-size:14px; }
+  .email.dup { border-color:#e9b9b5; }
+  .stat { font-size:22px; font-weight:700; }
+  .tabs { display:flex; flex-wrap:wrap; gap:4px; border-bottom:1px solid var(--line); margin-bottom:12px; }
+  .tab { border:none; border-bottom:3px solid transparent; border-radius:0; color:var(--muted); margin:0; padding:8px 12px; }
+  .tab.on { color:var(--accent); border-bottom-color:var(--accent); background:none; }
+  .tab:hover:not(:disabled) { background:#eef2fc; color:var(--accent); }
+  ol.steps { padding-inline-start:20px; margin:8px 0 0; }
+  ol.steps li { margin:6px 0; }
+  ol.steps .done { color:var(--muted); text-decoration:line-through; }
+  .watch { background:#fdf5e1; border-radius:6px; padding:8px 12px; margin-top:10px; font-size:14px; }
+  .log { font-size:13px; color:var(--muted); max-height:220px; overflow:auto; padding-inline-start:18px; margin:0; }
+  .empty { color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+  <span class="proto">نموذج تجريبي، هيترمي</span>
+  <h1>حالات الطلب (Order Status) في SkillBridge</h1>
+  <div class="intro">
+    <p><b>السؤال:</b> لما سارة (طالبة) تشتري كورس، الطلب بتاعها بيمشي بين أربع حالات: <b>مستني الدفع</b>، <b>مدفوع</b>، <b>فشل</b>، <b>مُسترد</b>.
+       هل القواعد دي بتتصرف صح في الحالات الغريبة؟ زي: Paymob بعت التأكيد مرتين، أو سارة دفعت مرتين في نفس الكورس، أو الأدمن رجّع الفلوس.</p>
+    <p>القواعد هنا منسوخة من الكود الحقيقي (<code>create-checkout</code> و<code>paymob-webhook</code> و<code>shop.sql</code>). مفيش أي حاجة بتتبعت لـ Supabase ولا Paymob: كله في الصفحة بس.</p>
+    <p><b>تجربيها إزاي:</b> اختاري حكاية من «الحكايات» تحت ودوسي على خطواتها بالترتيب، أو العبي بحرية بالزراير. اللي اتغير بيتلوّن أصفر.</p>
+  </div>
+
+  <div class="grid">
+    <div>
+      <section>
+        <h2>اللي حصل دلوقتي</h2>
+        <div id="outcome" class="outcome">لسه محدش داس على حاجة.</div>
+        <div class="label">سارة تقدر تفتح دروس:</div>
+        <div id="owns" class="chips"></div>
+      </section>
+
+      <section>
+        <h2>الطلبات</h2>
+        <div id="orders"></div>
+      </section>
+
+      <section>
+        <h2>الحكايات</h2>
+        <div id="tabs" class="tabs"></div>
+        <div id="scenario"></div>
+      </section>
+    </div>
+
+    <div>
+      <section>
+        <h2>العبي بحرية</h2>
+        <div class="label">سارة:</div>
+        <div class="row" id="studentButtons"></div>
+        <div class="label" style="margin-top:8px">الأدمن:</div>
+        <div class="row" id="adminButtons"></div>
+        <div class="label" style="margin-top:8px">أزرار Paymob والاسترجاع موجودة جوه كل طلب في «الطلبات».</div>
+        <div class="row" style="margin-top:8px"><button id="reset">ابدئي من الأول</button></div>
+      </section>
+
+      <section>
+        <h2>الكورسات</h2>
+        <table id="courses"></table>
+      </section>
+
+      <section>
+        <h2>لوحة الأدمن</h2>
+        <div class="row" style="gap:28px">
+          <div><div class="label">طلبات مدفوعة</div><div class="stat" id="paidCount"></div></div>
+          <div><div class="label">الإيرادات</div><div class="stat" id="revenue"></div></div>
+        </div>
+        <h2 style="margin-top:16px">إيميل الأدمن (Admin Inbox)</h2>
+        <div id="emails"></div>
+      </section>
+
+      <section>
+        <h2>كل اللي حصل بالترتيب</h2>
+        <ol id="log" class="log"></ol>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+// ===== The logic: a pure module, no DOM. Mirrors create-checkout + paymob-webhook + shop.sql. =====
+const OrderModel = (() => {
+  const STUDENT = 'سارة'
+
+  const initial = () => ({
+    courses: {
+      react: { id: 'react', title: 'React من الصفر', price: 50000, hidden: false },
+      cv: { id: 'cv', title: 'اكتب CV صح', price: 0, hidden: false },
+    },
+    orders: [],        // { no, course, status, amount, txId, paidAt, refundedAt }
+    transactions: [],  // what Paymob has sent: { id, order, success, amount, forged }
+    emails: [],        // { kind: 'new' | 'duplicate', order, course, amount, at }
+    clock: 0,
+  })
+
+  const egp = (piasters) => `${(piasters / 100).toLocaleString('en-EG')} جنيه`
+
+  // A Student owns a Course when it's a Free Course that isn't Hidden, or they have a Paid Order for it.
+  const owns = (s, courseId) => {
+    const c = s.courses[courseId]
+    return (c.price === 0 && !c.hidden) || s.orders.some((o) => o.course === courseId && o.status === 'paid')
+  }
+
+  const paidCount = (s) => s.orders.filter((o) => o.status === 'paid').length
+  const revenue = (s) => s.orders.filter((o) => o.status === 'paid').reduce((sum, o) => sum + o.amount, 0)
+
+  // create-checkout
+  function checkout(s, courseId) {
+    const c = s.courses[courseId]
+    if (c.hidden) return { tone: 'bad', text: 'السيرفر رفض: الكورس مخفي، ومحدش جديد يقدر يشتريه.' }
+    if (c.price <= 0) return { tone: 'bad', text: 'السيرفر رفض: الكورس مجاني، مفيش دفع.' }
+    if (s.orders.some((o) => o.course === courseId && o.status === 'paid'))
+      return { tone: 'bad', text: `السيرفر رفض: ${STUDENT} بتمتلك الكورس خلاص.` }
+    const abandoned = s.orders.filter((o) => o.course === courseId && o.status === 'pending')
+    abandoned.forEach((o) => { o.status = 'failed' })
+    const order = { no: s.orders.length + 1, course: courseId, status: 'pending', amount: c.price, txId: null, paidAt: null, refundedAt: null }
+    s.orders.push(order)
+    const extra = abandoned.length ? ` والطلب القديم (رقم ${abandoned.map((o) => o.no).join('، ')}) اتعلّم «فشل» لأنه اتساب.` : ''
+    return { text: `اتعمل طلب رقم ${order.no} بـ ${egp(order.amount)}، و${STUDENT} راحت لصفحة دفع Paymob.${extra}` }
+  }
+
+  // paymob-webhook
+  function webhook(s, tx) {
+    if (tx.forged) return { tone: 'bad', text: 'السيرفر رفض التأكيد: التوقيع غلط. ومحصلش أي تغيير.' }
+    const order = s.orders.find((o) => o.no === tx.order)
+    if (!order) return { tone: 'bad', text: 'طلب مش معروف.' }
+    const title = s.courses[order.course].title
+
+    if (tx.success && tx.amount === order.amount) {
+      if (order.status !== 'pending' && order.status !== 'failed')
+        return { text: `طلب ${order.no} حالته «${STATUS[order.status]}»، فالتأكيد اتجاهل. ومفيش إيميل اتبعت.` }
+      const other = s.orders.find((o) => o !== order && o.course === order.course && o.status === 'paid')
+      if (other) {
+        // Unique index: one Paid Order per Student per Course. The money was taken twice.
+        if (order.txId) return { tone: 'warn', text: 'نفس الدفع المكرر وصل تاني. الإيميل اتبعت قبل كده، فمفيش إيميل جديد.' }
+        order.txId = tx.id
+        s.emails.push({ kind: 'duplicate', order: order.no, course: title, amount: order.amount, at: s.clock })
+        return { tone: 'warn', text: `${STUDENT} دفعت تاني في كورس بتمتلكه (عندها طلب ${other.no} مدفوع). طلب ${order.no} فضل «${STATUS[order.status]}»، واتبعت إيميل «محتاج استرجاع» للأدمن.` }
+      }
+      order.status = 'paid'; order.paidAt = s.clock; order.txId = tx.id
+      s.emails.push({ kind: 'new', order: order.no, course: title, amount: order.amount, at: s.clock })
+      return { text: `الدفع نجح. طلب ${order.no} بقى «مدفوع»، والدروس اتفتحت، واتبعت إيميل للأدمن.` }
+    }
+    if (!tx.success) {
+      if (order.status !== 'pending') return { text: `Paymob قال الدفع اترفض، بس طلب ${order.no} حالته «${STATUS[order.status]}»، فمتغيرش.` }
+      order.status = 'failed'
+      return { tone: 'bad', text: `الدفع اترفض. طلب ${order.no} بقى «فشل»، وما اتخصمش منها حاجة.` }
+    }
+    return { tone: 'warn', text: `Paymob قال الدفع نجح بـ ${egp(tx.amount)}، بس الطلب بـ ${egp(order.amount)}. السيرفر ما عملش أي حاجة: الطلب فضل «${STATUS[order.status]}» ومفيش إيميل للأدمن.` }
+  }
+
+  // RLS policy "admin marks paid orders refunded"
+  function refund(s, no) {
+    const order = s.orders.find((o) => o.no === no)
+    if (order.status !== 'paid') return { tone: 'bad', text: `مرفوض: الأدمن يقدر يسجّل استرجاع لطلب «مدفوع» بس، وطلب ${no} حالته «${STATUS[order.status]}».` }
+    order.status = 'refunded'; order.refundedAt = s.clock
+    return { text: `طلب ${no} بقى «مُسترد»، و${STUDENT} مبقتش تقدر تفتح الكورس، والإيرادات نقصت.` }
+  }
+
+  // (state, action) => { state, outcome }
+  function dispatch(prev, action) {
+    const s = structuredClone(prev)
+    s.clock += 1
+    let outcome
+    switch (action.type) {
+      case 'checkout': outcome = checkout(s, action.course); break
+      case 'paymob': {
+        const order = s.orders.find((o) => o.no === action.order)
+        const tx = { id: `tx-${s.transactions.length + 1}`, order: action.order, success: action.success,
+                     amount: action.amount ?? order.amount, forged: !!action.forged }
+        s.transactions.push(tx)
+        outcome = webhook(s, tx)
+        break
+      }
+      case 'paymobRepeat': {
+        const tx = [...s.transactions].reverse().find((t) => t.order === action.order && !t.forged)
+        outcome = tx ? webhook(s, tx) : { tone: 'bad', text: 'Paymob ما بعتش أي تأكيد للطلب ده قبل كده.' }
+        break
+      }
+      case 'refund': outcome = refund(s, action.order); break
+      case 'hide':
+        s.courses[action.course].hidden = action.hidden
+        outcome = { text: `الأدمن ${action.hidden ? 'خبّى' : 'رجّع'} كورس «${s.courses[action.course].title}».` }
+        break
+      case 'setPrice':
+        s.courses[action.course].price = action.price
+        outcome = { text: `الأدمن غيّر سعر «${s.courses[action.course].title}» لـ ${egp(action.price)}.` }
+        break
+    }
+    return { state: s, outcome }
+  }
+
+  const STATUS = { pending: 'مستني الدفع', paid: 'مدفوع', failed: 'فشل', refunded: 'مُسترد' }
+  return { initial, dispatch, owns, paidCount, revenue, egp, STATUS, STUDENT }
+})()
+
+// ===== The page: a thin shell over OrderModel. =====
+const M = OrderModel
+let state = M.initial()
+let prev = state
+let outcome = null
+let history = []
+
+function act(action, label) {
+  prev = state
+  const r = M.dispatch(state, action)
+  state = r.state; outcome = r.outcome
+  history.push(`${label}: ${outcome.text}`)
+  render()
+}
+
+function reset() { state = M.initial(); prev = state; outcome = null; history = []; render() }
+
+const changed = (o) => {
+  const before = prev.orders.find((p) => p.no === o.no)
+  return !before || JSON.stringify(before) !== JSON.stringify(o)
+}
+
+function button(label, onClick, opts = {}) {
+  const b = document.createElement('button')
+  b.textContent = label
+  b.onclick = onClick
+  if (opts.primary) b.className = 'primary'
+  if (opts.disabled) b.disabled = true
+  return b
+}
+
+const FREE_PLAY = {
+  student: [
+    ['تدوس «اشترِ الآن» على React', { type: 'checkout', course: 'react' }],
+    ['تحاول تشتري كورس الـ CV المجاني', { type: 'checkout', course: 'cv' }],
+  ],
+  admin: () => [
+    [state.courses.react.hidden ? 'يرجّع كورس React' : 'يخبّي كورس React', { type: 'hide', course: 'react', hidden: !state.courses.react.hidden }],
+    [state.courses.cv.hidden ? 'يرجّع كورس الـ CV' : 'يخبّي كورس الـ CV', { type: 'hide', course: 'cv', hidden: !state.courses.cv.hidden }],
+    [state.courses.react.price === 50000 ? 'يغيّر سعر React لـ 700 جنيه' : 'يرجّع سعر React لـ 500 جنيه',
+      { type: 'setPrice', course: 'react', price: state.courses.react.price === 50000 ? 70000 : 50000 }],
+  ],
+}
+
+const orderActions = (o) => [
+  ['Paymob: الدفع نجح', { type: 'paymob', order: o.no, success: true }],
+  ['Paymob: الدفع اترفض', { type: 'paymob', order: o.no, success: false }],
+  ['Paymob: نجح بمبلغ مختلف', { type: 'paymob', order: o.no, success: true, amount: o.amount + 10000 }],
+  ['Paymob بعت نفس التأكيد تاني', { type: 'paymobRepeat', order: o.no }],
+  ['تأكيد مزيف (توقيع غلط)', { type: 'paymob', order: o.no, success: true, forged: true }],
+  ['الأدمن: سجّل استرجاع', { type: 'refund', order: o.no }],
+]
+
+// ===== Guided walkthroughs =====
+const SCENARIOS = [
+  {
+    name: 'الطريق العادي',
+    about: 'سارة بتشتري كورس React وبتدفع، والدفع بينجح.',
+    watch: 'الطلب بيبدأ «مستني الدفع»، وبعد تأكيد Paymob بس بيبقى «مدفوع». الدروس بتتفتح، وإيميل واحد بيوصل للأدمن، والإيرادات بتزيد.',
+    steps: [
+      ['سارة تدوس «اشترِ الآن»', { type: 'checkout', course: 'react' }],
+      ['Paymob: الدفع نجح (طلب 1)', { type: 'paymob', order: 1, success: true }],
+      ['سارة تحاول تشتريه تاني', { type: 'checkout', course: 'react' }],
+    ],
+  },
+  {
+    name: 'الكارت اترفض',
+    about: 'الكارت بتاع سارة بيترفض، فبتجرب تاني بكارت تاني.',
+    watch: 'طلب 1 بيفضل «فشل» على طول، والمحاولة التانية بتعمل طلب جديد (طلب 2). الأدمن بيشوف الطلبين، بس بيتبعتله إيميل واحد بس.',
+    steps: [
+      ['سارة تدوس «اشترِ الآن»', { type: 'checkout', course: 'react' }],
+      ['Paymob: الدفع اترفض (طلب 1)', { type: 'paymob', order: 1, success: false }],
+      ['سارة تجرب تاني', { type: 'checkout', course: 'react' }],
+      ['Paymob: الدفع نجح (طلب 2)', { type: 'paymob', order: 2, success: true }],
+    ],
+  },
+  {
+    name: 'Paymob بعت التأكيد مرتين',
+    about: 'Paymob ساعات بيبعت نفس التأكيد أكتر من مرة، لو السيرفر اتأخر في الرد.',
+    watch: 'التأكيد التاني ما بيعملش طلب مدفوع تاني، ومش بيبعت إيميل تاني للأدمن (ده المطلوب في تيكت #11).',
+    steps: [
+      ['سارة تدوس «اشترِ الآن»', { type: 'checkout', course: 'react' }],
+      ['Paymob: الدفع نجح (طلب 1)', { type: 'paymob', order: 1, success: true }],
+      ['Paymob بعت نفس التأكيد تاني', { type: 'paymobRepeat', order: 1 }],
+      ['وكمان مرة', { type: 'paymobRepeat', order: 1 }],
+    ],
+  },
+  {
+    name: 'دفعت مرتين',
+    about: 'سارة فتحت صفحة دفع، وسابتها، وفتحت صفحة دفع تانية. ودفعت في الاتنين.',
+    watch: 'لما فتحت التانية، طلب 1 اتعلّم «فشل». بعدين دفعت فيه متأخر، فاتخصم منها مرتين. هي بتفضل بتمتلك الكورس مرة واحدة، والأدمن بيوصله إيميل «محتاج استرجاع». بس بصي على طلب 1: الفلوس اتخصمت، والطلب مكتوب عليه «فشل». هل ده مقبول؟',
+    steps: [
+      ['سارة تدوس «اشترِ الآن» (صفحة 1)', { type: 'checkout', course: 'react' }],
+      ['سارة تدوس «اشترِ الآن» تاني (صفحة 2)', { type: 'checkout', course: 'react' }],
+      ['Paymob: الدفع نجح (طلب 2)', { type: 'paymob', order: 2, success: true }],
+      ['Paymob: الدفع نجح متأخر (طلب 1)', { type: 'paymob', order: 1, success: true }],
+      ['Paymob بعت تأكيد طلب 1 تاني', { type: 'paymobRepeat', order: 1 }],
+    ],
+  },
+  {
+    name: 'الاسترجاع',
+    about: 'سارة دفعت، والأدمن رجّعلها الفلوس من لوحة Paymob، وبعدين سجّل الاسترجاع في الموقع.',
+    watch: 'بعد الاسترجاع سارة بتخسر الكورس والإيرادات بتنقص. الأدمن ما يقدرش يسترجع طلب مش مدفوع. وسارة تقدر تشتري الكورس تاني من الأول.',
+    steps: [
+      ['سارة تدوس «اشترِ الآن»', { type: 'checkout', course: 'react' }],
+      ['الأدمن يحاول يسترجع وهو لسه مش مدفوع', { type: 'refund', order: 1 }],
+      ['Paymob: الدفع نجح (طلب 1)', { type: 'paymob', order: 1, success: true }],
+      ['الأدمن: سجّل استرجاع (طلب 1)', { type: 'refund', order: 1 }],
+      ['Paymob بعت تأكيد طلب 1 تاني', { type: 'paymobRepeat', order: 1 }],
+      ['سارة تشتري تاني', { type: 'checkout', course: 'react' }],
+    ],
+  },
+  {
+    name: 'مبلغ مختلف',
+    about: 'Paymob بيقول الدفع نجح، بس بمبلغ غير سعر الطلب. ده المفروض ما يحصلش، بس لو حصل؟',
+    watch: 'السيرفر ما بيعملش أي حاجة: الطلب بيفضل «مستني الدفع» على طول، ومفيش إيميل. يعني ممكن تكون فلوس اتخصمت والأدمن مش عارف. وتغيير السعر بعد ما الطلب اتعمل ما بيأثرش: الطلب بيحتفظ بسعره.',
+    steps: [
+      ['سارة تدوس «اشترِ الآن»', { type: 'checkout', course: 'react' }],
+      ['الأدمن يغيّر السعر لـ 700 جنيه', { type: 'setPrice', course: 'react', price: 70000 }],
+      ['Paymob: نجح بمبلغ مختلف (طلب 1)', { type: 'paymob', order: 1, success: true, amount: 70000 }],
+      ['Paymob: الدفع نجح بالمبلغ الصح (طلب 1)', { type: 'paymob', order: 1, success: true }],
+    ],
+  },
+  {
+    name: 'تأكيد مزيف',
+    about: 'حد بيحاول يبعت للسيرفر تأكيد دفع من عنده، علشان يفتح الكورس ببلاش.',
+    watch: 'السيرفر بيرفضه علشان التوقيع غلط، والطلب بيفضل «مستني الدفع».',
+    steps: [
+      ['سارة تدوس «اشترِ الآن»', { type: 'checkout', course: 'react' }],
+      ['تأكيد مزيف بيقول «الدفع نجح»', { type: 'paymob', order: 1, success: true, forged: true }],
+    ],
+  },
+  {
+    name: 'الكورس المخفي',
+    about: 'سارة اشترت React، وبعدين الأدمن خبّاه. وكمان خبّى كورس الـ CV المجاني.',
+    watch: 'سارة بتفضل تقدر تفتح React لأن عندها طلب مدفوع. بس كورس الـ CV المجاني بيتقفل على الكل، حتى اللي كانوا بيدرسوه.',
+    steps: [
+      ['سارة تدوس «اشترِ الآن»', { type: 'checkout', course: 'react' }],
+      ['Paymob: الدفع نجح (طلب 1)', { type: 'paymob', order: 1, success: true }],
+      ['الأدمن يخبّي React', { type: 'hide', course: 'react', hidden: true }],
+      ['الأدمن يخبّي كورس الـ CV', { type: 'hide', course: 'cv', hidden: true }],
+    ],
+  },
+]
+let scenario = 0
+let step = 0
+
+function startScenario(i) { scenario = i; step = 0; reset() }
+
+// ===== Render =====
+function render() {
+  const out = document.getElementById('outcome')
+  out.className = 'outcome' + (outcome?.tone ? ' ' + outcome.tone : '')
+  out.textContent = outcome ? outcome.text : 'لسه محدش داس على حاجة.'
+
+  document.getElementById('owns').innerHTML = Object.values(state.courses)
+    .map((c) => `<span class="chip ${M.owns(state, c.id) ? 'yes' : 'no'}">${M.owns(state, c.id) ? '✓' : '✗'} ${c.title}</span>`).join('')
+
+  const orders = document.getElementById('orders')
+  orders.innerHTML = state.orders.length ? '' : '<div class="empty">مفيش طلبات لسه.</div>'
+  state.orders.forEach((o) => {
+    const div = document.createElement('div')
+    div.className = 'order' + (changed(o) ? ' changed' : '')
+    const facts = [
+      `${state.courses[o.course].title}`, M.egp(o.amount),
+      o.paidAt != null ? `اتدفع في خطوة ${o.paidAt}` : null,
+      o.refundedAt != null ? `اترجع في خطوة ${o.refundedAt}` : null,
+      o.txId ? `عملية Paymob: ${o.txId}` : null,
+    ].filter(Boolean).join(' · ')
+    div.innerHTML = `<div><b>طلب ${o.no}</b> &nbsp;<span class="status s-${o.status}">${M.STATUS[o.status]}</span></div><div class="facts">${facts}</div>`
+    const row = document.createElement('div'); row.className = 'row'
+    orderActions(o).forEach(([label, a]) => row.appendChild(button(label, () => act(a, `${label} (طلب ${o.no})`))))
+    div.appendChild(row)
+    orders.appendChild(div)
+  })
+
+  const sb = document.getElementById('studentButtons'); sb.innerHTML = ''
+  FREE_PLAY.student.forEach(([label, a]) => sb.appendChild(button(label, () => act(a, `${M.STUDENT} ${label}`))))
+  const ab = document.getElementById('adminButtons'); ab.innerHTML = ''
+  FREE_PLAY.admin().forEach(([label, a]) => ab.appendChild(button(label, () => act(a, `الأدمن ${label}`))))
+
+  document.getElementById('courses').innerHTML = '<tr><th>الكورس</th><th>السعر</th><th>ظاهر؟</th></tr>' +
+    Object.values(state.courses).map((c) => {
+      const p = prev.courses[c.id]
+      const ch = p.price !== c.price || p.hidden !== c.hidden
+      return `<tr class="${ch ? 'changed' : ''}"><td>${c.title}</td><td>${c.price ? M.egp(c.price) : 'مجاني'}</td><td>${c.hidden ? 'مخفي' : 'ظاهر'}</td></tr>`
+    }).join('')
+
+  document.getElementById('paidCount').textContent = M.paidCount(state)
+  document.getElementById('revenue').textContent = M.egp(M.revenue(state))
+  document.getElementById('emails').innerHTML = state.emails.length
+    ? state.emails.map((e, i) => `<div class="email ${e.kind === 'duplicate' ? 'dup' : ''} ${i >= prev.emails.length ? 'changed' : ''}">
+        <b>${e.kind === 'duplicate' ? '⚠ محتاج استرجاع: طالبة دفعت مرتين' : 'طلب جديد مدفوع'}</b><br>
+        ${e.course} · ${M.egp(e.amount)} · ${M.STUDENT} · طلب ${e.order} · خطوة ${e.at}</div>`).join('')
+    : '<div class="empty">مفيش إيميلات.</div>'
+
+  document.getElementById('log').innerHTML = history.map((h) => `<li>${h}</li>`).join('')
+
+  const tabs = document.getElementById('tabs'); tabs.innerHTML = ''
+  SCENARIOS.forEach((sc, i) => {
+    const t = button(sc.name, () => startScenario(i)); t.className = 'tab' + (i === scenario ? ' on' : '')
+    tabs.appendChild(t)
+  })
+  const sc = SCENARIOS[scenario]
+  const box = document.getElementById('scenario')
+  box.innerHTML = `<p style="margin:0">${sc.about}</p>`
+  const ol = document.createElement('ol'); ol.className = 'steps'
+  sc.steps.forEach(([label, a], i) => {
+    const li = document.createElement('li')
+    if (i < step) { li.innerHTML = `<span class="done">${label}</span>` }
+    else li.appendChild(button(label, () => { step = i + 1; act(a, label) }, { primary: i === step, disabled: i !== step }))
+    ol.appendChild(li)
+  })
+  box.appendChild(ol)
+  const restart = button('ابدئي الحكاية من الأول', () => startScenario(scenario))
+  box.appendChild(restart)
+  if (step >= sc.steps.length) box.insertAdjacentHTML('beforeend', `<div class="watch"><b>لاحظي:</b> ${sc.watch}</div>`)
+  else box.insertAdjacentHTML('beforeend', `<div class="watch" style="background:#f3f4f6"><b>هتلاحظي إيه:</b> ${sc.watch}</div>`)
+}
+
+document.getElementById('reset').onclick = () => { step = 0; reset() }
+render()
+</script>
+</body>
+</html>
