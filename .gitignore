@@ -5,3 +5,7 @@ dist
 .env
 .env.local
 .env.test
+supabase/.env.payments
+supabase/.temp/
+.claude/settings.local.json
+.claude/worktrees/
