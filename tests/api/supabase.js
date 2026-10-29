@@ -91,7 +91,7 @@ export async function addLessonContent(courseId, lessonIndex = 0) {
 
 // An Order as the payment webhook would leave it.
 export async function createOrder(student, courseId, status = 'paid') {
-  const { error } = await server().from('skillbridge_orders').insert({
+  const { data, error } = await server().from('skillbridge_orders').insert({
     student_id: student.id,
     course_id: courseId,
     status,
@@ -99,8 +99,9 @@ export async function createOrder(student, courseId, status = 'paid') {
     student_name: student.name,
     student_email: student.email,
     paid_at: status === 'pending' ? null : new Date().toISOString(),
-  })
+  }).select('id').single()
   if (error) throw error
+  return data.id
 }
 
 export async function cleanup() {
